@@ -10,6 +10,7 @@
 
 # production
 /build
+/plan
 
 /public/config/config.js
 /public/images/logo.*
