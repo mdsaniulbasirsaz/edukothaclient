@@ -34,15 +34,21 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AccountCircleRounded from '@mui/icons-material/AccountCircleRounded';
+import AccountBalanceRounded from '@mui/icons-material/AccountBalanceRounded';
+import AppsRounded from '@mui/icons-material/AppsRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import AutorenewRounded from '@mui/icons-material/AutorenewRounded';
+import BarChartRounded from '@mui/icons-material/BarChartRounded';
+import BusinessCenterRounded from '@mui/icons-material/BusinessCenterRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import CallEndRounded from '@mui/icons-material/CallEndRounded';
 import CallSplitRounded from '@mui/icons-material/CallSplitRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
+import CloudDoneRounded from '@mui/icons-material/CloudDoneRounded';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import CropSquareRounded from '@mui/icons-material/CropSquareRounded';
 import DownloadRounded from '@mui/icons-material/DownloadRounded';
 import DrawRounded from '@mui/icons-material/DrawRounded';
 import ErrorOutlineRounded from '@mui/icons-material/ErrorOutlineRounded';
@@ -53,9 +59,10 @@ import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import HelpCenterRounded from '@mui/icons-material/HelpCenterRounded';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import InstallDesktopRounded from '@mui/icons-material/InstallDesktopRounded';
+import LinkRounded from '@mui/icons-material/LinkRounded';
 import LiveTvRounded from '@mui/icons-material/LiveTvRounded';
+import LocalHospitalRounded from '@mui/icons-material/LocalHospitalRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
-import KeyboardArrowUpRounded from '@mui/icons-material/KeyboardArrowUpRounded';
 import LoginRounded from '@mui/icons-material/LoginRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import MeetingRoomRounded from '@mui/icons-material/MeetingRoomRounded';
@@ -67,15 +74,22 @@ import NewspaperRounded from '@mui/icons-material/NewspaperRounded';
 import NorthEastRounded from '@mui/icons-material/NorthEastRounded';
 import OndemandVideoRounded from '@mui/icons-material/OndemandVideoRounded';
 import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
+import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import PlayCircleOutlineRounded from '@mui/icons-material/PlayCircleOutlineRounded';
 import PanToolRounded from '@mui/icons-material/PanToolRounded';
+import PauseRounded from '@mui/icons-material/PauseRounded';
 import PodcastsRounded from '@mui/icons-material/PodcastsRounded';
 import ScreenShareRounded from '@mui/icons-material/ScreenShareRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
+import SearchRounded from '@mui/icons-material/SearchRounded';
+import SendRounded from '@mui/icons-material/SendRounded';
 import SubtitlesRounded from '@mui/icons-material/SubtitlesRounded';
 import SupportAgentRounded from '@mui/icons-material/SupportAgentRounded';
+import TitleRounded from '@mui/icons-material/TitleRounded';
+import TranslateRounded from '@mui/icons-material/TranslateRounded';
 import VideoCallRounded from '@mui/icons-material/VideoCallRounded';
 import VideocamRounded from '@mui/icons-material/VideocamRounded';
+import VolunteerActivismRounded from '@mui/icons-material/VolunteerActivismRounded';
 import RecoverRecording from '../components/recoverrecordingdialog/RecoverRecording';
 import edumeetConfig from '../utils/edumeetConfig';
 import { startListeners, stopListeners } from '../store/actions/startActions';
@@ -108,7 +122,6 @@ const brand = {
 	surfaceSubtle: '#f4f8fd',
 	border: '#d6e2f2',
 	borderStrong: '#7d8fa9',
-	heroGradient: 'linear-gradient(135deg, #042c6a 0%, #0b3f8f 55%, #1a81ec 130%)',
 	ctaGradient: 'linear-gradient(120deg, #042c6a 0%, #1668c4 100%)',
 } as const;
 
@@ -147,6 +160,41 @@ const menuIn = keyframes`
 `;
 
 const reducedMotion = '@media (prefers-reduced-motion: reduce)';
+
+// The brighter product palette of the feature tour (§7.3).
+const tour = {
+	blue: '#0B5CFF',
+	blueHover: '#0040D0',
+	blueOnDark: '#8DB0FF',
+	ink: '#0B1530',
+	body: '#4A5468',
+	muted: '#5B6478',
+	line: '#E3E7EF',
+	soft: '#F4F7FD',
+	white: '#FFFFFF',
+	slideBar: '#DCE5F7',
+	canvasDot: '#D3DAE8',
+	window: '#0E1424',
+	panel: '#151C30',
+	control: '#1C2438',
+	windowDot: '#3A4358',
+	windowText: '#C9D2E6',
+	windowLine: 'rgba(255, 255, 255, 0.06)',
+	green: '#2EE59D',
+	red: '#E5343A',
+	amber: '#FFB547',
+	purple: '#7C5CFF',
+	pink: '#E8508F',
+	stage: [
+		'radial-gradient(120% 90% at 100% 0%, #5C8DFF 0%, transparent 55%)',
+		'radial-gradient(90% 80% at 0% 100%, #00C2FF55 0%, transparent 60%)',
+		'linear-gradient(150deg, #0B5CFF 0%, #0033B8 60%, #00105C 100%)',
+	].join(', '),
+	windowShadow: '0 30px 80px -20px rgba(0, 8, 60, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08)',
+	cardShadow: '0 18px 40px -12px rgba(0, 10, 60, 0.45)',
+} as const;
+
+const phoneWidth = '@media (max-width: 639.95px)';
 
 // Built on the app's config theme, so custom keys used by shared dialogs
 // (RecoverRecording) are kept. It wraps only <HomePage />. Breakpoints go in the
@@ -293,35 +341,64 @@ const strings = {
 		helper: 'Share this name so others can join.',
 		copy: 'Copy link',
 		copied: 'Copied!',
-		errSpace: 'Room names can\'t have spaces. Try my-class.',
+		errSpace: 'Room names can\'t have spaces. Try team-meeting.',
 		errShort: 'Use at least 3 characters.',
-		// placeholder until the transcriber languages and room size are confirmed (Q4)
-		inClass: '32 in class',
 		fromLink: 'We took the room name from your link.',
 	},
 	hero: {
-		eyebrow: 'Bangladesh Research and Education Network (BdREN) · For all research institutes and organizations',
-		title: 'Online meetings for every Institutions and Organization in Bangladesh',
-		subtitle: 'Teach, meet and record securely in your browser. No time limits, on BdREN\'s own network.',
+		eyebrow: 'By BdREN, Bangladesh\'s national research and education network',
+		title: 'Video meetings for everyone in Bangladesh',
+		subtitle: 'Meetings, webinars and classes in your browser. No time limits, no install, and your data stays in Bangladesh.',
 		tour: 'Watch a 1-minute tour',
-		// trustNoInstall: 'No install needed',
-		// trustEncryption: 'End-to-end encryption available',
-		// trustRecording: 'Recording and transcription',
-		mockLabel: 'eduKotha class in progress: a teacher shares slides while students take part by video and chat',
+		joinLabel: 'Meeting name or link',
+		join: 'Join',
+		joinHelper: 'Paste a link or type the meeting name you were given.',
+		joining: 'Opening the meeting. You\'ll check your camera and mic next.',
+		fromLink: 'We took the meeting name from your link.',
+		joinPhone: 'Join with a link or name',
+		joinPhoneHelper: 'Join opens a sheet where you can paste your meeting link.',
+		scenesLabel: 'Example meetings',
+		pauseScenes: 'Pause example meetings',
+		playScenes: 'Play example meetings',
+		captionsChip: 'Live captions on',
 	},
 	trustedBy: {
-		eyebrow: 'Higher education in Bangladesh',
+		eyebrow: 'Trusted across Bangladesh',
 		titleStart: 'Built for ',
-		titleHighlight: 'every university',
+		titleHighlight: 'every organization',
 		titleEnd: ' in Bangladesh',
-		subtitle: 'One secure platform for classes, meetings and research, on BdREN\'s national research and education network.',
-		listLabel: 'Universities in Bangladesh',
+		subtitle: 'One secure platform for meetings, webinars and classes, on BdREN\'s national network.',
+		listLabel: 'Organizations using eduKotha',
+		sectorListLabel: 'organizations using eduKotha',
+		filterLabel: 'Filter by sector',
+		all: 'All',
+		pause: 'Pause scrolling logos',
+		play: 'Play scrolling logos',
+		showAll: 'Show all organizations',
+		showFewer: 'Show fewer',
+		consent: 'Showing organizations that agreed to appear.',
+		tellUs: 'Using eduKotha at your organization? Tell us →',
+		forLabel: 'For',
+		forListLabel: 'Who eduKotha is for',
 	},
-	productChips: {
+	howItWorks: {
+		eyebrow: 'How it works',
+		titleStart: 'Your first meeting in ',
+		titleHighlight: 'three steps',
+		step: 'Step',
+		// Per D9: confirm who needs an account before launch.
+		accountNote: 'Anyone can join with a link, no account needed. Sign in to schedule meetings and keep your rooms.',
+	},
+	features: {
 		eyebrow: 'One platform',
-		title: 'Everything a class needs, in one link',
+		titleStart: 'Everything a class needs, ',
+		titleHighlight: 'in one link',
+		intro: 'Teach, meet and collaborate from any browser. Students join in a click, with nothing to install.',
 		learnMore: 'Learn more',
+		learnMoreAbout: 'about',
 		label: 'eduKotha features',
+		start: 'Start for free',
+		demo: 'Book a demo',
 	},
 	spotlight: {
 		badge: 'New',
@@ -347,17 +424,6 @@ const strings = {
 		body: 'Start a room in seconds. Share one link with your students.',
 		help: 'Need help getting your institution on board?',
 		helpLink: 'Contact BdREN',
-	},
-	footer: {
-		label: 'Footer',
-		service: 'A service of BdREN',
-		about: 'A service of BdREN, the national research and education network.',
-		follow: 'Follow',
-		infoLink: 'Learn more',
-		imprint: 'Imprint',
-		privacy: 'Privacy policy',
-		copyright: `© ${new Date().getFullYear()} BdREN. All rights reserved.`,
-		backToTop: 'Back to top',
 	},
 } as const;
 
@@ -539,17 +605,54 @@ const UNIVERSITY_LOGOS: { name: string; src: string }[] = [
 	{ name: 'Asian University for Women', src: 'https://upload.wikimedia.org/wikipedia/en/4/48/Logo_Asian_University_for_Women.png' },
 ];
 
-type Chip = { key: MockVariant; label: string; title: string; text: string; bullets: string[]; icon: SvgIconComponent; mockLabel: string; href?: string };
+// "Trusted across Bangladesh" (UpdateHomePageDesignplan.md §4.3), as designed on
+// the canvas: a sector filter over logo cards. A card shows the logo when it has
+// `src`, otherwise the sector icon and the name.
+type SectorKey = 'government' | 'education' | 'healthcare' | 'business' | 'ngos';
+type Organization = { name: string; sector: SectorKey; src?: string };
 
-const CHIPS: Chip[] = [
-	{ key: 'classes', label: 'Online classes', icon: SchoolRounded, title: 'Online classes', text: 'Teach live from your browser. Share slides, write on the whiteboard and talk with every student.', bullets: [ 'Slides and screen sharing', 'Hand raising and chat', 'Works on phones' ], mockLabel: 'A live lecture: the teacher\'s slides next to student video tiles' },
-	{ key: 'meetings', label: 'Meetings', icon: GroupsRounded, title: 'Meetings', text: 'Meet colleagues in a secure room with a lobby and a room lock.', bullets: [ 'Waiting-room lobby', 'Room lock', 'One link to join' ], mockLabel: 'A meeting with six video tiles and two people waiting in the lobby' },
-	{ key: 'webinars', label: 'Webinars', icon: PodcastsRounded, title: 'Webinars', text: 'Stream a lecture or event live to a larger audience.', bullets: [ 'Live streaming', 'Moderated questions', 'Recording' ], mockLabel: 'A live stream with a speaker and audience questions' },
-	{ key: 'recording', label: 'Recording', icon: FiberManualRecordRounded, title: 'Recording', text: 'Record classes on the server, so nothing depends on one laptop.', bullets: [ 'Server-side recording', 'Start and stop from the room', 'Share the file later' ], mockLabel: 'A recording in progress next to a list of past recordings' },
-	{ key: 'transcription', label: 'Transcription', icon: SubtitlesRounded, title: 'Transcription', text: 'Get a live transcript in the room\'s language.', bullets: [ 'Live captions', 'Searchable text', 'In the room\'s language' ], mockLabel: 'The live transcript panel next to two video tiles' },
-	{ key: 'whiteboard', label: 'Whiteboard', icon: DrawRounded, title: 'Whiteboard', text: 'Draw, write and explain together on a shared board.', bullets: [ 'Pens and shapes', 'Everyone can draw', 'Export the board' ], mockLabel: 'A shared whiteboard with a diagram of the TCP handshake' },
-	{ key: 'breakout', label: 'Breakout rooms', icon: CallSplitRounded, title: 'Breakout rooms', text: 'Split the class into groups and bring everyone back in one click.', bullets: [ 'Group work', 'Move people between rooms', 'Close all at once' ], mockLabel: 'Three breakout groups of four students each' },
-	{ key: 'chat', label: 'Chat & files', icon: ForumRounded, title: 'Chat and files', text: 'Send messages and share files without leaving the class.', bullets: [ 'Room chat', 'File sharing', 'Private messages' ], mockLabel: 'The room chat with messages and a shared PDF file' },
+const SECTORS: { key: SectorKey; label: string; icon: SvgIconComponent }[] = [
+	{ key: 'government', label: 'Government', icon: AccountBalanceRounded },
+	{ key: 'education', label: 'Education', icon: SchoolRounded },
+	{ key: 'healthcare', label: 'Healthcare', icon: LocalHospitalRounded },
+	{ key: 'business', label: 'Business', icon: BusinessCenterRounded },
+	{ key: 'ngos', label: 'NGOs', icon: VolunteerActivismRounded },
+];
+
+// placeholder: replace each name with the organization and its logo (`src`) once BdREN confirms it (D4).
+const PLACEHOLDER_ORGANIZATIONS: Record<Exclude<SectorKey, 'education'>, string[]> = {
+	government: [ '[Ministry logo]', '[Directorate logo]', '[Division office logo]', '[District office logo]', '[Public agency logo]', '[Regulator logo]' ],
+	healthcare: [ '[Hospital logo]', '[Medical university logo]', '[Clinic network logo]', '[Health institute logo]', '[Diagnostic centre logo]', '[Nursing college logo]' ],
+	business: [ '[Bank logo]', '[Telecom logo]', '[Garment company logo]', '[Software company logo]', '[Startup logo]', '[Consultancy logo]' ],
+	ngos: [ '[Development NGO logo]', '[Microfinance logo]', '[Health NGO logo]', '[Education NGO logo]', '[Relief organization logo]', '[Foundation logo]' ],
+};
+
+const ORGANIZATIONS: Organization[] = [
+	...UNIVERSITY_LOGOS.map((logo): Organization => ({ ...logo, sector: 'education' })),
+	...(Object.entries(PLACEHOLDER_ORGANIZATIONS) as [SectorKey, string[]][]).flatMap(([ sector, names ]) => names.map((name): Organization => ({ name, sector }))),
+];
+
+// Numbers band, shown instead of the logos while ORGANIZATIONS is empty. Only
+// confirmed figures go here (placeholders in the design: member institutions,
+// meetings this month, share of meetings hosted in Bangladesh).
+const TRUST_STATS: { value: string; label: string }[] = [];
+
+type FeatureKey = 'classes' | 'meetings' | 'webinars' | 'recording' | 'transcription' | 'whiteboard' | 'breakout' | 'chat';
+
+// The "One platform" feature tour (§7.3). `link` points to the homepage section
+// that covers the feature until it has its own page; without one, no link is shown.
+// `label` describes the feature's picture for screen readers.
+type Feature = { key: FeatureKey; icon: SvgIconComponent; title: string; description: string; link?: string; label: string };
+
+const FEATURES: Feature[] = [
+	{ key: 'classes', icon: SchoolRounded, title: 'Online classes', description: 'Teach live from your browser. Share slides, run polls, and call on any student when they raise a hand.', link: '#use-cases', label: 'A live lecture: the teacher\'s slides next to three student video tiles, with three hands raised' },
+	{ key: 'meetings', icon: GroupsRounded, title: 'Meetings', description: 'HD video meetings for faculty and staff, with screen sharing and calendar invites built in.', link: '#use-cases', label: 'A faculty meeting with a grid of video tiles and seven more people' },
+	{ key: 'webinars', icon: PodcastsRounded, title: 'Webinars', description: 'Host open days and guest lectures for thousands, with moderated Q&A and registration.', link: '#recording', label: 'A live webinar: a large speaker tile next to audience questions with upvotes' },
+	{ key: 'recording', icon: FiberManualRecordRounded, title: 'Recording', description: 'Every session is saved to the cloud automatically, so students can rewatch anytime.', link: '#recording', label: 'A saved lecture recording, paused at 21 minutes of 50' },
+	{ key: 'transcription', icon: SubtitlesRounded, title: 'Live transcription', description: 'Accurate captions while you speak and a searchable transcript afterwards.', link: '#recording', label: 'Live captions over the teacher\'s video, next to a transcript with timestamps' },
+	{ key: 'whiteboard', icon: DrawRounded, title: 'Whiteboard', description: 'An infinite canvas the whole class can draw on together, in real time.', link: '#use-cases', label: 'A shared whiteboard with a client and server handshake diagram and two students drawing' },
+	{ key: 'breakout', icon: CallSplitRounded, title: 'Breakout rooms', description: 'Split the class into small groups in one click and bring everyone back on a timer.', link: '#use-cases', label: 'Four breakout rooms with their groups, eight minutes left' },
+	{ key: 'chat', icon: ForumRounded, title: 'Chat & files', description: 'Share notes, links and files with the class, and keep it all after the session ends.', link: '#use-cases', label: 'The class chat with messages and a shared PDF file' },
 ];
 
 const SPOTLIGHT_ROWS: { label: string; icon: SvgIconComponent; transcription?: boolean }[] = [
@@ -576,49 +679,6 @@ const NEWS: { category: string; date: string; title: string; desc: string; art?:
 	{ category: 'Event', date: '[Date]', title: 'BdREN at the annual research and education meeting', desc: 'Meet the team and see what is coming next for eduKotha.' },
 	{ category: 'Network', date: '[Date]', title: 'BdREN connects 200+ member institutions', desc: 'Universities and research institutes on one national network.' },
 ];
-
-const FOOTER_COLUMNS: { title: string; links: NavLink[] }[] = [
-	{
-		title: 'Product',
-		links: [
-			{ label: 'Online classes', href: '#products' },
-			{ label: 'Meetings', href: '#products' },
-			{ label: 'Recording', href: '#recording' },
-			{ label: 'Transcription', href: '#recording' },
-			{ label: 'Whiteboard', href: '#products' },
-			{ label: 'Pricing', href: PRICING_URL },
-		],
-	},
-	{
-		title: 'Solutions',
-		links: [
-			{ label: 'Teachers', href: '#use-cases' },
-			{ label: 'Students', href: '#use-cases' },
-			{ label: 'Researchers', href: '#use-cases' },
-			{ label: 'IT admins', href: '#use-cases' },
-		],
-	},
-	{
-		title: 'Resources',
-		links: [
-			{ label: 'Help centre' },
-			{ label: 'Getting started' },
-			{ label: 'System status', href: STATUS_URL },
-			{ label: 'News', href: '#news' },
-			{ label: 'Install the app' },
-		],
-	},
-	{
-		title: 'BdREN',
-		links: [
-			{ label: 'About BdREN', href: BDREN_URL },
-			{ label: 'Contact', href: CONTACT_URL },
-			{ label: 'Terms of use' },
-		],
-	},
-];
-
-const SOCIAL: { label: string; href: string }[] = []; // filled once BdREN confirms channels (Q8)
 
 // ── Helpers ──
 
@@ -995,6 +1055,7 @@ const navItemSx = (solid: boolean, active: boolean): SxProps<Theme> => ({
 
 type NavbarProps = {
 	solid: boolean;
+	raised: boolean;
 	meetItems: MeetItem[];
 	showSignIn: boolean;
 	loggedIn: boolean;
@@ -1007,7 +1068,7 @@ type NavbarProps = {
 	onOpenDrawer: () => void;
 };
 
-const Navbar = ({ solid, meetItems, showSignIn, loggedIn, accountItems, onSignIn, onSignOut, onStart, onJoin, drawerOpen, onOpenDrawer }: NavbarProps): React.JSX.Element => {
+const Navbar = ({ solid, raised, meetItems, showSignIn, loggedIn, accountItems, onSignIn, onSignOut, onStart, onJoin, drawerOpen, onOpenDrawer }: NavbarProps): React.JSX.Element => {
 	const [ openMenu, setOpenMenu ] = useState<MegaKey | null>(null);
 	const hoverTimer = useRef<number>(undefined);
 	const buttonRefs = useRef<Record<MegaKey, HTMLButtonElement | null>>({ products: null, resources: null });
@@ -1060,7 +1121,8 @@ const Navbar = ({ solid, meetItems, showSignIn, loggedIn, accountItems, onSignIn
 					bgcolor: solid ? brand.white : 'transparent',
 					color: solid ? brand.navy : brand.white,
 					// The bottom rule is an inset shadow, so the navbar stays exactly 64 / 56 px.
-					boxShadow: solid ? `${shadow[1]}, inset 0 -1px 0 ${brand.border}` : 'none',
+					// It sits on the white hero, so it keeps the rule at the top and lifts once scrolled.
+					boxShadow: solid ? `${raised ? `${shadow[1]}, ` : ''}inset 0 -1px 0 ${brand.border}` : 'none',
 					transition: `background-color ${motion.base}ms ${motion.ease}, color ${motion.base}ms ${motion.ease}, box-shadow ${motion.base}ms ${motion.ease}`,
 					[reducedMotion]: { transition: 'none' },
 				}}
@@ -1365,141 +1427,7 @@ const InstallDialog = ({ open, onClose }: { open: boolean; onClose: () => void }
 	</Dialog>
 );
 
-// ── Footer (§8) ──
-
-const footerLinkSx: SxProps<Theme> = {
-	color: brand.textOnDarkMuted,
-	fontSize: 14,
-	textDecoration: 'none',
-	display: 'inline-flex',
-	alignItems: 'center',
-	minHeight: { xs: 44, md: 32 },
-	'&:hover': { color: brand.white, textDecoration: 'underline' },
-	...focusRing(true),
-};
-
-type FooterProps = {
-	footerRef: React.Ref<HTMLElement>;
-	imprintUrl: string;
-	privacyUrl: string;
-	info: { enabled: boolean; text: string; desc: string; link: string };
-	onStart: () => void;
-	onJoin: () => void;
-};
-
-const Footer = ({ footerRef, imprintUrl, privacyUrl, info, onStart, onJoin }: FooterProps): React.JSX.Element => {
-	const phone = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
-	const columns = FOOTER_COLUMNS
-		.map((column) => ({
-			...column,
-			links: visibleLinks(column.title === 'BdREN' ? [
-				...column.links,
-				{ label: strings.footer.imprint, href: imprintUrl },
-				{ label: strings.footer.privacy, href: privacyUrl },
-			] : column.links),
-		}))
-		.filter((column) => column.links.length > 0);
-
-	const linkList = (links: NavLink[]): React.JSX.Element => (
-		<Box component='ul' sx={{ listStyle: 'none', m: 0, p: 0 }}>
-			{links.map((link) => (
-				<li key={link.label}><Link href={link.href} sx={footerLinkSx}>{link.label}</Link></li>
-			))}
-		</Box>
-	);
-
-	return (
-		<Box component='footer' ref={footerRef} sx={{ bgcolor: brand.navy, color: brand.white }}>
-			<Container maxWidth={false} sx={{ maxWidth: layout.container, px: layout.gutter, pt: 8, pb: 6 }}>
-				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)', lg: `2fr repeat(${columns.length}, 1fr)` }, gap: { xs: 4, md: 5 } }}>
-					<Box sx={{ gridColumn: { md: '1 / -1', lg: 'auto' }, maxWidth: 400 }}>
-						<Logo chip />
-						<Typography sx={{ mt: 2, color: brand.textOnDarkMuted, fontSize: 14 }}>{strings.footer.about}</Typography>
-						<Box sx={{ mt: 3, display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-							<Button variant='contained' color='secondary' onClick={onStart} sx={{ boxShadow: 'none', ...focusRing(true) }}>{strings.common.start}</Button>
-							<Button
-								variant='outlined'
-								onClick={onJoin}
-								sx={{ color: brand.white, borderColor: 'rgba(255, 255, 255, 0.6)', '&:hover': { borderColor: brand.white, bgcolor: 'rgba(255, 255, 255, 0.08)' }, ...focusRing(true) }}
-							>
-								{strings.common.join}
-							</Button>
-						</Box>
-						{info.enabled && info.text && (
-							<Typography sx={{ mt: 3, fontSize: 14, color: brand.textOnDarkMuted, display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-								<InfoOutlined aria-hidden sx={{ fontSize: 18, mt: '2px' }} />
-								<span>
-									<strong>{info.text}</strong>
-									{info.desc && ` ${info.desc}`}
-									{info.link && <> <Link href={info.link} sx={{ color: brand.blueOnNavy, ...focusRing(true) }}>{strings.footer.infoLink}</Link></>}
-								</span>
-							</Typography>
-						)}
-						{SOCIAL.length > 0 && (
-							<Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-								<Typography sx={{ fontSize: 14, color: brand.textOnDarkMuted, mr: 1 }}>{strings.footer.follow}</Typography>
-								{SOCIAL.map((item) => (
-									<Link key={item.label} href={item.href} aria-label={item.label} sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.12)', color: brand.white, display: 'grid', placeItems: 'center', ...focusRing(true) }}>
-										<OpenInNewRounded aria-hidden sx={{ fontSize: 18 }} />
-									</Link>
-								))}
-							</Box>
-						)}
-					</Box>
-
-					<Box component='nav' aria-label={strings.footer.label} sx={{ display: 'contents' }}>
-						{columns.map((column) => (phone ? (
-							<Accordion
-								key={column.title}
-								disableGutters
-								elevation={0}
-								square
-								sx={{ bgcolor: 'transparent', color: brand.white, borderBottom: '1px solid rgba(255, 255, 255, 0.12)', '&::before': { display: 'none' } }}
-							>
-								<AccordionSummary expandIcon={<ExpandMoreRounded sx={{ color: brand.white }} />} sx={{ px: 0, minHeight: 52, fontSize: 14, fontWeight: 500, ...focusRing(true) }}>
-									{column.title}
-								</AccordionSummary>
-								<AccordionDetails sx={{ px: 0, pt: 0 }}>{linkList(column.links)}</AccordionDetails>
-							</Accordion>
-						) : (
-							<Box key={column.title}>
-								<Typography component='h2' sx={{ fontSize: 14, fontWeight: 500, mb: 1.5 }}>{column.title}</Typography>
-								{linkList(column.links)}
-							</Box>
-						)))}
-					</Box>
-				</Box>
-			</Container>
-
-			<Box sx={{ bgcolor: brand.navy900 }}>
-				<Container
-					maxWidth={false}
-					sx={{
-						maxWidth: layout.container,
-						px: layout.gutter,
-						minHeight: 56,
-						py: { xs: 2, md: 0 },
-						display: 'flex',
-						flexDirection: { xs: 'column', md: 'row' },
-						alignItems: 'center',
-						justifyContent: 'space-between',
-						gap: 1,
-						// Room for the phone sticky bar, which hides over the footer.
-						pb: { xs: 'calc(16px + env(safe-area-inset-bottom))', md: 0 },
-					}}
-				>
-					<Typography sx={{ fontSize: 14, color: brand.textOnDarkMuted }}>{strings.footer.copyright}</Typography>
-					<Link href='#top' sx={{ ...footerLinkSx, gap: 0.5 } as SxProps<Theme>}>
-						{strings.footer.backToTop}
-						<KeyboardArrowUpRounded aria-hidden sx={{ fontSize: 18 }} />
-					</Link>
-				</Container>
-			</Box>
-		</Box>
-	);
-};
-
-// ── Hero picture (§7.1) ──
+// ── Product mocks ──
 
 // Frame for the JSX product mocks: a light browser bar with three dots and a short URL.
 const BrowserFrame = ({ url, label, children, elevation = 3, ratio = '16 / 10' }: {
@@ -1544,68 +1472,222 @@ const MockAvatar = ({ initials, color, size = 28 }: { initials: string; color: s
 	</Box>
 );
 
-// A flat picture of a live eduKotha class, drawn with boxes (no image file, §16).
-const HeroMock = ({ url }: { url: string }): React.JSX.Element => {
-	const controls: { icon: SvgIconComponent; danger?: boolean; wide?: boolean }[] = [
-		{ icon: MicRounded },
-		{ icon: VideocamRounded },
-		{ icon: ScreenShareRounded },
-		{ icon: FiberManualRecordRounded, danger: true },
-		{ icon: CallEndRounded, danger: true, wide: true },
-	];
+// ── Hero meeting scenes (UpdateHomePageDesignplan.md §4.2) ──
+// Four meetings drawn with boxes, so every visitor sees their own kind: a team
+// meeting (first, and the only one under reduced motion), an official briefing,
+// a class and a webinar. They crossfade every 5 s; the visitor can pause or pick one.
 
-	return (
-		<BrowserFrame url={url} label={strings.hero.mockLabel}>
-			<Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', bgcolor: brand.navy900, p: { xs: 1, sm: 1.5 }, gap: { xs: 1, sm: 1.5 } }}>
-				<Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: { xs: 1, sm: 1.5 } }}>
-					<Box sx={{ flex: 2.2, position: 'relative', borderRadius: radius.sm, bgcolor: brand.white, p: { xs: 1.25, sm: 2 }, display: 'flex', flexDirection: 'column', gap: { xs: 0.75, sm: 1 } }}>
-						<Box sx={{ fontSize: { xs: 10, sm: 13 }, fontWeight: 700, color: brand.navy }}>CSE 101: Computer Networks</Box>
-						<Box sx={{ height: 4, width: 32, borderRadius: radius.pill, bgcolor: brand.orange }} />
-						{[ '92%', '78%', '85%', '60%' ].map((width) => (
-							<Box key={width} sx={{ height: { xs: 5, sm: 7 }, width, borderRadius: radius.pill, bgcolor: brand.blueLight }} />
-						))}
-						<Box sx={{ mt: 'auto', display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-							{[ 40, 64, 52, 80 ].map((height) => (
-								<Box key={height} sx={{ width: '14%', height: `${height * 0.4}px`, borderRadius: '4px 4px 0 0', bgcolor: brand.blue, opacity: 0.25 + (height / 160) }} />
-							))}
-						</Box>
-						<Box sx={{ position: 'absolute', right: 8, bottom: 8, p: 0.5, borderRadius: radius.sm, bgcolor: brand.navy700, display: 'flex', alignItems: 'center', gap: 0.75, pr: 1 }}>
-							<MockAvatar initials='FA' color={brand.orange} size={22} />
-							<Box sx={{ fontSize: 10, color: brand.white, display: { xs: 'none', sm: 'block' } }}>Dr. Ahmed</Box>
-						</Box>
-					</Box>
-					<Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: { xs: 0.75, sm: 1 } }}>
-						{MOCK_STUDENTS.map((student) => (
-							<Box key={student.initials} sx={{ borderRadius: radius.sm, bgcolor: brand.navy700, display: 'grid', placeItems: 'center' }}>
-								<MockAvatar initials={student.initials} color={student.color} />
-							</Box>
-						))}
-					</Box>
-					<Box sx={{ flex: 1.1, display: 'flex', flexDirection: 'column', gap: 0.75, borderRadius: radius.sm, bgcolor: brand.white, p: 1, [narrow]: { display: 'none' } }}>
-						<Box sx={{ fontSize: 10, fontWeight: 700, color: brand.navy }}>Chat</Box>
-						{MOCK_CHAT.map((message) => (
-							<Box key={message.name} sx={{ borderRadius: '6px', bgcolor: brand.surfaceSubtle, px: 0.75, py: 0.5 }}>
-								<Box sx={{ fontSize: 9, fontWeight: 700, color: brand.blueDark }}>{message.name}</Box>
-								<Box sx={{ fontSize: 10, color: brand.navy, lineHeight: 1.3 }}>{message.text}</Box>
-							</Box>
-						))}
-					</Box>
-				</Box>
-				<Box sx={{ display: 'flex', justifyContent: 'center', gap: { xs: 0.75, sm: 1 } }}>
-					{controls.map(({ icon: Icon, danger, wide }, index) => (
-						<Box key={index} sx={{ height: { xs: 24, sm: 30 }, width: wide ? { xs: 36, sm: 44 } : { xs: 24, sm: 30 }, borderRadius: radius.pill, display: 'grid', placeItems: 'center', bgcolor: danger && wide ? '#d93b3b' : 'rgba(255, 255, 255, 0.14)', color: danger && !wide ? '#ff6b6b' : brand.white }}>
-							<Icon sx={{ fontSize: { xs: 14, sm: 17 } }} />
-						</Box>
-					))}
-				</Box>
-			</Box>
-		</BrowserFrame>
-	);
-};
+type HeroSceneKey = 'team' | 'briefing' | 'class' | 'webinar';
+type HeroScene = { key: HeroSceneKey; label: string; room: string; chip: string; chipDot: string; status: string; secure?: boolean; mockLabel: string };
+
+const HERO_SCENE_MS = 5000;
+
+const HERO_SCENES: HeroScene[] = [
+	{ key: 'team', label: 'Team meeting', room: 'team-weekly', chip: '8 in meeting', chipDot: '#1d9e6a', status: 'REC', mockLabel: 'A team meeting: Farhana presents Q3 targets while four colleagues watch and chat' },
+	{ key: 'briefing', label: 'Official briefing', room: 'district-briefing', chip: 'Room locked', chipDot: brand.orange, status: 'ENCRYPTED', secure: true, mockLabel: 'An official briefing with one speaker, a row of participants and three people waiting in the lobby' },
+	{ key: 'class', label: 'Class', room: 'cse-341', chip: '3 hands raised', chipDot: brand.orange, status: 'REC', mockLabel: 'An online class: a lecture slide next to three student video tiles, with three hands raised' },
+	{ key: 'webinar', label: 'Webinar', room: 'open-webinar', chip: 'Live now', chipDot: '#d93b3b', status: 'LIVE', mockLabel: 'A live webinar: the host on video next to audience questions with upvotes' },
+];
+
+const HERO_TEAM = [
+	{ initials: 'RK', color: '#1668c4', name: 'Rahim', speaking: true },
+	{ initials: 'NS', color: '#6d42c7', name: 'Nusrat' },
+	{ initials: 'TM', color: '#1d7a50', name: 'Tanvir' },
+	{ initials: 'MR', color: '#0f766e', name: 'Mitu' },
+];
+
+const HERO_BRIEFING_STRIP = [
+	{ initials: 'SA', color: '#1668c4' },
+	{ initials: 'JB', color: '#6d42c7' },
+	{ initials: 'RN', color: '#1d7a50' },
+	{ initials: 'MI', color: '#0f766e' },
+];
+
+const HERO_LOBBY = [ 'Imran H.', 'Sadia K.', 'Arif M.' ];
+
+const HERO_STUDENTS = [
+	{ initials: 'NA', color: '#1668c4', name: 'Nadia', speaking: true },
+	{ initials: 'RK', color: '#6d42c7', name: 'Rahim' },
+	{ initials: 'SH', color: '#1d7a50', name: 'Sadia' },
+];
+
+const HERO_QUESTIONS = [
+	{ name: 'Arif', text: 'Will the slides be shared?', votes: 12 },
+	{ name: 'Mim', text: 'Is there a recording afterwards?', votes: 8 },
+	{ name: 'Tanvir', text: 'How do we register for part 2?', votes: 5 },
+];
 
 const narrow = '@media (max-width: 479.95px)';
 
-// Decorative chips that overlap the frame edges; hidden below 768 px (§7.1).
+const HeroTile = ({ initials, color, name, speaking, size = 28, flex }: { initials: string; color: string; name?: string; speaking?: boolean; size?: number; flex?: number }): React.JSX.Element => (
+	<Box sx={{ position: 'relative', flex, minWidth: 0, minHeight: 0, borderRadius: radius.sm, bgcolor: brand.navy700, display: 'grid', placeItems: 'center', boxShadow: speaking ? `inset 0 0 0 2px ${tour.green}` : 'none' }}>
+		<MockAvatar initials={initials} color={color} size={size} />
+		{name && (
+			<Box sx={{ position: 'absolute', left: 5, bottom: 4, maxWidth: 'calc(100% - 10px)', px: '5px', py: '1px', borderRadius: '4px', bgcolor: 'rgba(0, 0, 0, 0.35)', color: brand.white, fontSize: 9, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+				{name}
+			</Box>
+		)}
+	</Box>
+);
+
+// A shared slide with a bar chart, used by the team meeting and the class.
+const HeroSlide = ({ kicker, title, bars, children }: { kicker: string; title: string; bars: number[]; children?: React.ReactNode }): React.JSX.Element => (
+	<Box sx={{ flex: 2.2, minWidth: 0, position: 'relative', display: 'flex', flexDirection: 'column', gap: 0.75, p: { xs: 1.25, sm: 1.5 }, borderRadius: radius.sm, bgcolor: brand.white }}>
+		<Box sx={mockText(9, 500, brand.blueDark)}>{kicker}</Box>
+		<Box sx={{ ...mockText(14, 700), [narrow]: { fontSize: 11 } } as SxProps<Theme>}>{title}</Box>
+		<Box sx={{ width: 28, height: 3, borderRadius: radius.pill, bgcolor: brand.orange }} />
+		<Box sx={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'flex-end', gap: '9%', px: '6%', borderBottom: `2px solid ${brand.border}` }}>
+			{bars.map((height, index) => (
+				<Box key={index} sx={{ flex: 1, height: `${height}%`, borderRadius: '4px 4px 0 0', bgcolor: height === Math.max(...bars) ? brand.blue : '#c9dcf5' }} />
+			))}
+		</Box>
+		{children}
+	</Box>
+);
+
+const HeroSceneBody = ({ scene }: { scene: HeroSceneKey }): React.JSX.Element => {
+	switch (scene) {
+		case 'briefing':
+			return (
+				<>
+					<Box sx={{ flex: 2, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+						<Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+							<HeroTile initials='KH' color={brand.orange} name='Kamal H. · Speaking' speaking size={52} flex={1} />
+						</Box>
+						<Box sx={{ height: 44, flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 0.75, [narrow]: { height: 32 } }}>
+							{HERO_BRIEFING_STRIP.map((person) => <HeroTile key={person.initials} {...person} size={20} />)}
+							<Box sx={{ borderRadius: radius.sm, bgcolor: '#1c2f5e', color: tour.windowText, display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 700 }}>+9</Box>
+						</Box>
+					</Box>
+					<Panel sx={{ width: '38%', flexShrink: 0, [narrow]: { width: '46%' } }}>
+						<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5 }}>
+							<Box sx={mockText(10, 700)}>Lobby</Box>
+							<Pill color={brand.navy} bg={brand.orangeLight}>3 waiting</Pill>
+						</Box>
+						{HERO_LOBBY.map((name) => (
+							<Box key={name} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5 }}>
+								<Box sx={mockText(9)}>{name}</Box>
+								<Box sx={{ px: 0.75, borderRadius: radius.pill, bgcolor: brand.blueDark, ...mockText(8, 700, brand.white) } as SxProps<Theme>}>Admit</Box>
+							</Box>
+						))}
+						<Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 0.5, ...mockText(9, 500, brand.textSecondary) } as SxProps<Theme>}>
+							<LockRounded sx={{ fontSize: 12 }} />
+							Room locked
+						</Box>
+					</Panel>
+				</>
+			);
+		case 'class':
+			return (
+				<>
+					<HeroSlide kicker='CSE 341 · WEEK 6' title='Lecture 12: Transport layer' bars={[ 38, 58, 90, 50 ]}>
+						<Pill color={brand.navy} bg={brand.orangeLight}><PanToolRounded sx={{ fontSize: 10 }} />3 hands raised</Pill>
+					</HeroSlide>
+					<Box sx={{ flex: 1, minWidth: 0, display: 'grid', gridTemplateRows: 'repeat(3, minmax(0, 1fr))', gap: 0.75 }}>
+						{HERO_STUDENTS.map((person) => <HeroTile key={person.initials} {...person} size={26} />)}
+					</Box>
+				</>
+			);
+		case 'webinar':
+			return (
+				<>
+					<Box sx={{ flex: 1.5, minWidth: 0, position: 'relative', display: 'flex' }}>
+						<HeroTile initials='SR' color='#0f766e' name='Shirin R. · Host' speaking size={56} flex={1} />
+						<Box sx={{ position: 'absolute', left: 8, top: 8 }}>
+							<Pill color={brand.white} bg='#d93b3b'>● LIVE</Pill>
+						</Box>
+					</Box>
+					<Panel sx={{ width: '38%', flexShrink: 0, [narrow]: { width: '46%' } }}>
+						<Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 0.5 }}>
+							<Box sx={mockText(10, 700)}>Q&A</Box>
+							<Box sx={mockText(8, 400, brand.textSecondary)}>Top questions</Box>
+						</Box>
+						{HERO_QUESTIONS.map((question) => (
+							<Box key={question.name} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, px: 0.75, py: 0.5, borderRadius: '6px', bgcolor: brand.surfaceSubtle, [narrow]: { '&:nth-of-type(n+4)': { display: 'none' } } }}>
+								<Box sx={{ flex: 1, minWidth: 0 }}>
+									<Box sx={mockText(8, 700, brand.blueDark)}>{question.name}</Box>
+									<Box sx={mockText(9)}>{question.text}</Box>
+								</Box>
+								<Box sx={{ flexShrink: 0, px: 0.5, borderRadius: '4px', bgcolor: brand.blueLight, ...mockText(8, 700, brand.blueDark) } as SxProps<Theme>}>▲ {question.votes}</Box>
+							</Box>
+						))}
+					</Panel>
+				</>
+			);
+		case 'team':
+		default:
+			return (
+				<>
+					<HeroSlide kicker='OPERATIONS · WEEK 41' title='Q3 targets by region' bars={[ 42, 64, 88, 52, 70 ]}>
+						<Box sx={{ position: 'absolute', right: 8, top: 8, display: 'flex', alignItems: 'center', gap: '5px', p: '3px 8px 3px 3px', borderRadius: radius.pill, bgcolor: brand.navy700, color: brand.white, fontSize: 9, [narrow]: { display: 'none' } }}>
+							<MockAvatar initials='FA' color={brand.orange} size={18} />
+							Farhana is presenting
+						</Box>
+					</HeroSlide>
+					<Box sx={{ flex: 1, minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(2, minmax(0, 1fr))', gap: 0.75 }}>
+						{HERO_TEAM.map((person) => <HeroTile key={person.initials} {...person} />)}
+					</Box>
+					<Panel sx={{ flex: 1.1, [narrow]: { display: 'none' } }}>
+						<Box sx={mockText(10, 700)}>Chat</Box>
+						<Box sx={{ borderRadius: '6px', bgcolor: brand.surfaceSubtle, px: 0.75, py: 0.5 }}>
+							<Box sx={mockText(8, 700, brand.blueDark)}>Rahim</Box>
+							<Box sx={mockText(9)}>Can you share the deck after?</Box>
+						</Box>
+						<Box sx={{ alignSelf: 'flex-end', borderRadius: '6px', bgcolor: brand.blueLight, px: 0.75, py: 0.5 }}>
+							<Box sx={mockText(8, 700, brand.blueDark)}>Farhana</Box>
+							<Box sx={mockText(9)}>Yes, sending it now.</Box>
+						</Box>
+						<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '6px', border: `1px solid ${brand.border}`, px: 0.75, py: 0.5, minWidth: 0 }}>
+							<Box sx={{ px: '3px', borderRadius: '3px', bgcolor: '#d93b3b', ...mockText(7, 700, brand.white) } as SxProps<Theme>}>PDF</Box>
+							<Box sx={{ ...mockText(9, 500), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } as SxProps<Theme>}>Q3-targets.pdf</Box>
+						</Box>
+					</Panel>
+				</>
+			);
+	}
+};
+
+const HERO_CONTROLS: { icon: SvgIconComponent; record?: boolean }[] = [
+	{ icon: MicRounded },
+	{ icon: VideocamRounded },
+	{ icon: ScreenShareRounded },
+	{ icon: SubtitlesRounded },
+	{ icon: FiberManualRecordRounded, record: true },
+];
+
+// The app window: a title bar with the room name and a status pill, the scene, and the controls.
+const HeroSceneFrame = ({ scene }: { scene: HeroScene }): React.JSX.Element => (
+	<Box sx={{ width: '100%', aspectRatio: '16 / 10', display: 'flex', flexDirection: 'column', bgcolor: brand.white, borderRadius: '16px', overflow: 'hidden', boxShadow: `0 0 0 1px ${brand.border}, 0 24px 48px rgba(4, 44, 106, 0.16)` }}>
+		<Box sx={{ height: 30, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, borderBottom: `1px solid ${brand.border}` }}>
+			{[ 0, 1, 2 ].map((dot) => <Box key={dot} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: brand.border }} />)}
+			<Box sx={{ ml: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.5, px: 1.25, py: 0.25, borderRadius: radius.pill, bgcolor: brand.surfaceSubtle, color: brand.textSecondary, fontSize: 11, fontFamily: '\'Roboto Mono\', ui-monospace, monospace' }}>
+				<LockRounded sx={{ fontSize: 11 }} />
+				<Box component='span' sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{scene.room}</Box>
+			</Box>
+			<Box sx={{ ml: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', px: 1, py: 0.25, borderRadius: radius.pill, bgcolor: scene.secure ? '#e3f4ea' : '#fdecec', color: scene.secure ? '#1d6b45' : brand.error, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em' }}>
+				<Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'currentColor' }} />
+				{scene.status}
+			</Box>
+		</Box>
+		<Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: { xs: 0.75, sm: 1.25 }, p: { xs: 1, sm: 1.25 }, bgcolor: brand.navy900 }}>
+			<Box sx={{ flex: 1, minHeight: 0, display: 'flex', gap: 1 }}>
+				<HeroSceneBody scene={scene.key} />
+			</Box>
+			<Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 0.75 }}>
+				{HERO_CONTROLS.map(({ icon: Icon, record }, index) => (
+					<Box key={index} sx={{ width: { xs: 24, sm: 28 }, height: { xs: 24, sm: 28 }, borderRadius: radius.pill, display: 'grid', placeItems: 'center', bgcolor: 'rgba(255, 255, 255, 0.14)', color: record ? '#ff6b6b' : brand.white }}>
+						<Icon sx={{ fontSize: { xs: 13, sm: 15 } }} />
+					</Box>
+				))}
+				<Box sx={{ width: { xs: 34, sm: 42 }, height: { xs: 24, sm: 28 }, borderRadius: radius.pill, display: 'grid', placeItems: 'center', bgcolor: '#d93b3b', color: brand.white }}>
+					<CallEndRounded sx={{ fontSize: { xs: 14, sm: 16 } }} />
+				</Box>
+			</Box>
+		</Box>
+	</Box>
+);
+
+// Decorative chips that overlap the frame edges; hidden below 768 px.
 const FloatingChip = ({ children, sx }: { children: React.ReactNode; sx: SxProps<Theme> }): React.JSX.Element => (
 	<Box
 		aria-hidden
@@ -1616,12 +1698,13 @@ const FloatingChip = ({ children, sx }: { children: React.ReactNode; sx: SxProps
 			gap: 1,
 			px: 1.75,
 			py: 1,
-			borderRadius: radius.pill,
+			borderRadius: radius.sm,
 			bgcolor: brand.white,
+			border: `1px solid ${brand.border}`,
 			color: brand.navy,
 			fontSize: 14,
 			fontWeight: 500,
-			boxShadow: shadow[2],
+			boxShadow: '0 8px 24px rgba(4, 44, 106, 0.12)',
 			whiteSpace: 'nowrap',
 			...sx,
 		} as SxProps<Theme>}
@@ -1629,6 +1712,265 @@ const FloatingChip = ({ children, sx }: { children: React.ReactNode; sx: SxProps
 		{children}
 	</Box>
 );
+
+const sceneButtonSx = (active: boolean): SxProps<Theme> => ({
+	height: 36,
+	px: 1.75,
+	border: 0,
+	borderRadius: radius.sm,
+	bgcolor: active ? brand.navy : 'transparent',
+	color: active ? brand.white : brand.navy,
+	font: 'inherit',
+	fontSize: 14,
+	fontWeight: 500,
+	cursor: 'pointer',
+	whiteSpace: 'nowrap',
+	transition: `background-color ${motion.base}ms ${motion.ease}`,
+	'&:hover': { bgcolor: active ? brand.navy : brand.blueLight },
+	...focusRing(),
+});
+
+const HeroScenes = ({ captions }: { captions: boolean }): React.JSX.Element => {
+	const [ index, setIndex ] = useState(0);
+	const [ paused, setPaused ] = useState(false);
+	const reduceMotion = useMediaQuery(reducedMotion);
+	const current = HERO_SCENES[index];
+
+	// Rotates while the tab is visible; stops for reduced motion or once the visitor pauses or picks a scene.
+	useEffect(() => {
+		if (paused || reduceMotion) return;
+
+		const timer = window.setInterval(() => {
+			if (!document.hidden) setIndex((value) => (value + 1) % HERO_SCENES.length);
+		}, HERO_SCENE_MS);
+
+		return () => window.clearInterval(timer);
+	}, [ paused, reduceMotion ]);
+
+	const choose = (next: number): void => {
+		setIndex(next);
+		setPaused(true);
+	};
+
+	return (
+		<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.25 }}>
+			<Box sx={{ position: 'relative', width: '100%' }}>
+				<Box aria-hidden sx={{ position: 'absolute', inset: '6%', borderRadius: '50%', bgcolor: brand.blue, opacity: 0.16, filter: 'blur(70px)' }} />
+				{/* All scenes share one grid cell and crossfade, so the frame never changes height. */}
+				<Box sx={{ position: 'relative', display: 'grid' }}>
+					{HERO_SCENES.map((scene, sceneIndex) => {
+						const active = sceneIndex === index;
+
+						return (
+							<Box
+								key={scene.key}
+								role={active ? 'img' : undefined}
+								aria-label={active ? scene.mockLabel : undefined}
+								aria-hidden={active ? undefined : true}
+								sx={{
+									gridArea: '1 / 1',
+									opacity: active ? 1 : 0,
+									visibility: active ? 'visible' : 'hidden',
+									transition: `opacity 450ms ease, visibility 0s linear ${active ? 0 : 450}ms`,
+									[reducedMotion]: { transition: 'none' },
+								}}
+							>
+								<HeroSceneFrame scene={scene} />
+							</Box>
+						);
+					})}
+				</Box>
+				<FloatingChip sx={{ top: -18, right: 28 }}>
+					<Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: current.chipDot }} />
+					{current.chip}
+				</FloatingChip>
+				{captions && (
+					<FloatingChip sx={{ bottom: 52, left: -22 }}>
+						<Box sx={{ px: '5px', py: '1px', borderRadius: '4px', bgcolor: brand.navy, color: brand.white, fontSize: 10, fontWeight: 700 }}>CC</Box>
+						{strings.hero.captionsChip}
+					</FloatingChip>
+				)}
+			</Box>
+
+			<Box role='group' aria-label={strings.hero.scenesLabel} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, borderRadius: radius.md, bgcolor: brand.surfaceSubtle, border: `1px solid ${brand.border}`, maxWidth: '100%' }}>
+				<IconButton
+					onClick={() => setPaused(!paused)}
+					aria-label={paused ? strings.hero.playScenes : strings.hero.pauseScenes}
+					sx={{ width: 36, height: 36, borderRadius: radius.sm, bgcolor: brand.blueLight, color: brand.navy, '&:hover': { bgcolor: brand.border }, ...focusRing() }}
+				>
+					{paused ? <PlayArrowRounded sx={{ fontSize: 18 }} /> : <PauseRounded sx={{ fontSize: 18 }} />}
+				</IconButton>
+				{/* Labels from 600 px; dots on phones, each still named for screen readers. */}
+				<Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
+					{HERO_SCENES.map((scene, sceneIndex) => (
+						<Box key={scene.key} component='button' type='button' aria-pressed={sceneIndex === index} onClick={() => choose(sceneIndex)} sx={sceneButtonSx(sceneIndex === index)}>
+							{scene.label}
+						</Box>
+					))}
+				</Box>
+				<Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 0.25, pr: 0.5 }}>
+					{HERO_SCENES.map((scene, sceneIndex) => (
+						<Box
+							key={scene.key}
+							component='button'
+							type='button'
+							aria-label={scene.label}
+							aria-pressed={sceneIndex === index}
+							onClick={() => choose(sceneIndex)}
+							sx={{ width: 32, height: 36, p: 0, border: 0, bgcolor: 'transparent', display: 'grid', placeItems: 'center', cursor: 'pointer', borderRadius: radius.sm, ...focusRing() } as SxProps<Theme>}
+						>
+							<Box sx={{ width: sceneIndex === index ? 22 : 8, height: 8, borderRadius: radius.pill, bgcolor: sceneIndex === index ? brand.navy : brand.borderStrong, transition: `width ${motion.base}ms ${motion.ease}` }} />
+						</Box>
+					))}
+				</Box>
+			</Box>
+		</Box>
+	);
+};
+
+// ── Hero actions (UpdateHomePageDesignplan.md §4.1) ──
+// Start a meeting next to an inline join field, so a participant joins without
+// opening a dialog. Below 600 px the field becomes a button that opens the Join sheet.
+const HeroActions = ({ ctasRef, onStart, onOpenJoin }: { ctasRef: React.Ref<HTMLDivElement>; onStart: () => void; onOpenJoin: () => void }): React.JSX.Element => {
+	const navigate = useNavigate();
+	const [ room, setRoom ] = useState('');
+	const [ notice, setNotice ] = useState<string | null>(null);
+	const [ joining, setJoining ] = useState(false);
+	const error = validateRoomName(room);
+
+	const join = (): void => {
+		if (joining || !room || error) return;
+
+		setJoining(true);
+		// Load the room page before navigating, so the spinner stays until it can render.
+		import('../App')
+			.catch(() => undefined)
+			.finally(() => navigate(`/${room}`));
+	};
+
+	const onPaste = (event: React.ClipboardEvent<HTMLInputElement>): void => {
+		const fromLink = roomFromPastedUrl(event.clipboardData.getData('text'));
+
+		if (!fromLink) return;
+
+		event.preventDefault();
+		setRoom(fromLink);
+		setNotice(strings.hero.fromLink);
+	};
+
+	const hint = joining ? strings.hero.joining : error ?? notice ?? strings.hero.joinHelper;
+
+	return (
+		<Box sx={{ width: '100%' }}>
+			<Box ref={ctasRef} sx={{ mt: { xs: 3.5, md: 4.5 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1.5 }}>
+				<Button
+					variant='contained'
+					color='secondary'
+					size='large'
+					endIcon={<ArrowForwardRounded />}
+					onClick={onStart}
+					onMouseEnter={prefetchApp}
+					onFocus={prefetchApp}
+					sx={{ flexShrink: 0, minHeight: { xs: 52, sm: 56 }, fontSize: 17, boxShadow: '0 8px 20px rgba(254, 155, 42, 0.28)', '&:hover': { bgcolor: brand.orangeDark, boxShadow: 'none' }, ...focusRing() }}
+				>
+					{strings.common.start}
+				</Button>
+
+				<Box
+					sx={{
+						flex: 1,
+						minWidth: 0,
+						height: 56,
+						boxSizing: 'border-box',
+						display: { xs: 'none', sm: 'flex' },
+						alignItems: 'center',
+						gap: 0.75,
+						p: '5px 5px 5px 14px',
+						border: `1.5px solid ${error ? brand.error : brand.borderStrong}`,
+						borderRadius: radius.md,
+						bgcolor: brand.white,
+						transition: `border-color ${motion.fast}ms ${motion.ease}, box-shadow ${motion.fast}ms ${motion.ease}`,
+						'&:focus-within': { borderColor: error ? brand.error : brand.blue, boxShadow: `0 0 0 3px ${error ? 'rgba(179, 38, 30, 0.15)' : 'rgba(26, 129, 236, 0.25)'}` },
+					}}
+				>
+					<LinkRounded aria-hidden sx={{ fontSize: 20, color: brand.textSecondary, flexShrink: 0 }} />
+					<Box component='label' htmlFor='ek-hero-room' sx={visuallyHidden}>{strings.hero.joinLabel}</Box>
+					<Box
+						component='input'
+						id='ek-hero-room'
+						type='text'
+						value={room}
+						placeholder={strings.hero.joinLabel}
+						autoComplete='off'
+						autoCapitalize='none'
+						autoCorrect='off'
+						spellCheck={false}
+						maxLength={128}
+						aria-describedby='ek-hero-hint'
+						aria-invalid={Boolean(error)}
+						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+							setRoom(event.target.value.toLowerCase());
+							setNotice(null);
+						}}
+						onPaste={onPaste}
+						onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+							if (event.key === 'Enter') join();
+						}}
+						onFocus={prefetchApp}
+						sx={{
+							flex: 1,
+							minWidth: 0,
+							height: '100%',
+							p: 0,
+							border: 0,
+							outline: 0,
+							bgcolor: 'transparent',
+							color: brand.navy,
+							font: 'inherit',
+							fontFamily: '\'Roboto Mono\', ui-monospace, monospace',
+							fontSize: 15,
+							fontWeight: 500,
+							'&::placeholder': { color: brand.borderStrong, fontFamily: 'Roboto, system-ui, sans-serif', fontWeight: 400, opacity: 1 },
+						}}
+					/>
+					<Button
+						variant='contained'
+						disableElevation
+						loading={joining}
+						disabled={!room || Boolean(error)}
+						onClick={join}
+						onMouseEnter={prefetchApp}
+						sx={{ flexShrink: 0, minHeight: 44, height: 44, px: 2.5, borderRadius: radius.sm, bgcolor: brand.navy, color: brand.white, '&:hover': { bgcolor: brand.navy700 }, '&.Mui-disabled': { bgcolor: brand.border, color: brand.textSecondary }, ...focusRing() }}
+					>
+						{strings.hero.join}
+					</Button>
+				</Box>
+
+				<Button
+					variant='outlined'
+					size='large'
+					startIcon={<LinkRounded />}
+					onClick={onOpenJoin}
+					sx={{ display: { xs: 'inline-flex', sm: 'none' }, minHeight: 52, fontSize: 17, color: brand.blueDark, borderColor: brand.blueDark, borderWidth: 1.5, '&:hover': { borderColor: brand.blueDark, bgcolor: brand.blueLight }, ...focusRing() }}
+				>
+					{strings.hero.joinPhone}
+				</Button>
+			</Box>
+
+			<Typography
+				id='ek-hero-hint'
+				aria-live='polite'
+				sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5, mt: 1.25, minHeight: 20, fontSize: 14, lineHeight: '20px', color: error ? brand.error : brand.textSecondary }}
+			>
+				{error && <ErrorOutlineRounded aria-hidden sx={{ fontSize: 16 }} />}
+				{hint}
+			</Typography>
+			<Typography sx={{ display: { xs: 'block', sm: 'none' }, mt: 1.25, fontSize: 13, color: brand.textSecondary, textAlign: 'center' }}>
+				{strings.hero.joinPhoneHelper}
+			</Typography>
+		</Box>
+	);
+};
 
 // ── Quick Join (§6.7) ──
 
@@ -2024,7 +2366,7 @@ const QuickJoinDialog = ({ open, view, onViewChange, onClose, randomizeOnBlank, 
 
 // ── Feature mocks (§7.3–§7.5) ──
 
-type MockVariant = 'classes' | 'meetings' | 'webinars' | 'recording' | 'transcription' | 'whiteboard' | 'breakout' | 'chat' | 'admin';
+type MockVariant = 'classes' | 'meetings' | 'recording' | 'transcription' | 'chat' | 'admin';
 
 const mockText = (size: number, weight = 400, color: string = brand.navy): SxProps<Theme> => ({ fontSize: size, fontWeight: weight, color, lineHeight: 1.35 });
 
@@ -2093,27 +2435,6 @@ const ProductMock = ({ variant }: { variant: MockVariant }): React.JSX.Element =
 					</Panel>
 				</Stage>
 			);
-		case 'webinars':
-			return (
-				<Stage>
-					<Box sx={{ flex: 2, position: 'relative', borderRadius: radius.sm, bgcolor: brand.navy700, display: 'grid', placeItems: 'center' }}>
-						<MockAvatar initials='FA' color={brand.orange} size={48} />
-						<Box sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 0.75 }}>
-							<Pill color={brand.white} bg='#d93b3b'>● LIVE</Pill>
-							<Pill color={brand.white} bg='rgba(255, 255, 255, 0.16)'>1,240 watching</Pill>
-						</Box>
-					</Box>
-					<Panel sx={{ flex: 1 }}>
-						<Box sx={mockText(11, 700)}>Questions</Box>
-						{[ 'Will slides be shared?', 'Is there a recording?', 'Next session date?' ].map((question, index) => (
-							<Box key={question} sx={{ borderRadius: '6px', bgcolor: brand.surfaceSubtle, px: 0.75, py: 0.5, display: 'flex', justifyContent: 'space-between', gap: 0.5 }}>
-								<Box sx={mockText(10)}>{question}</Box>
-								<Box sx={mockText(9, 700, brand.blueDark)}>▲ {12 - (index * 4)}</Box>
-							</Box>
-						))}
-					</Panel>
-				</Stage>
-			);
 		case 'recording':
 			return (
 				<Stage>
@@ -2141,48 +2462,6 @@ const ProductMock = ({ variant }: { variant: MockVariant }): React.JSX.Element =
 						<VideoTile initials='NA' color={MOCK_STUDENTS[0].color} label='Nadia' />
 					</Box>
 					<TranscriptPanel />
-				</Stage>
-			);
-		case 'whiteboard':
-			return (
-				<Stage light>
-					<Panel sx={{ width: 36, flexShrink: 0, alignItems: 'center', p: 0.75 }}>
-						{[ brand.navy, brand.blue, brand.orange, '#2e9d6b' ].map((color) => <Box key={color} sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: color }} />)}
-					</Panel>
-					<Panel sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-						<Box sx={mockText(11, 700)}>TCP handshake</Box>
-						{[ [ 'Client', '12%' ], [ 'Server', '64%' ] ].map(([ name, left ]) => (
-							<Box key={name} sx={{ position: 'absolute', top: '28%', left, width: '22%', height: '14%', border: `2px solid ${brand.navy}`, borderRadius: '6px', display: 'grid', placeItems: 'center', ...mockText(10, 700) } as SxProps<Theme>}>{name}</Box>
-						))}
-						{[ [ 'SYN', '50%', brand.blue ], [ 'SYN-ACK', '63%', brand.orange ], [ 'ACK', '76%', '#2e9d6b' ] ].map(([ label, top, color ]) => (
-							<Box key={label} sx={{ position: 'absolute', top, left: '23%', width: '41%', borderTop: `2px solid ${color}`, ...mockText(9, 700) } as SxProps<Theme>}>
-								<Box sx={{ mt: -1.75, textAlign: 'center' }}>{label}</Box>
-							</Box>
-						))}
-					</Panel>
-				</Stage>
-			);
-		case 'breakout':
-			return (
-				<Stage light>
-					<Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 1 }}>
-						{[ 1, 2, 3 ].map((group) => (
-							<Panel key={group}>
-								<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-									<Box sx={mockText(11, 700)}>Group {group}</Box>
-									<Box sx={mockText(10, 500, brand.textSecondary)}>4 people</Box>
-								</Box>
-								<Box sx={{ display: 'flex', gap: 0.5 }}>
-									{MOCK_STUDENTS.map((student) => <MockAvatar key={student.initials} initials={student.initials} color={student.color} size={20} />)}
-								</Box>
-								<Box sx={{ mt: 'auto', ...mockText(9, 700, brand.blueDark) } as SxProps<Theme>}>Join room →</Box>
-							</Panel>
-						))}
-						<Panel sx={{ justifyContent: 'center', alignItems: 'center', bgcolor: brand.navy }}>
-							<Box sx={mockText(11, 700, brand.white)}>Close all rooms</Box>
-							<Box sx={mockText(9, 400, brand.textOnDarkMuted)}>Everyone returns in 30 s</Box>
-						</Panel>
-					</Box>
 				</Stage>
 			);
 		case 'chat':
@@ -2299,11 +2578,6 @@ const ArrowLink = ({ href, children, onDark }: { href: string; children: React.R
 	</Link>
 );
 
-const panelIn = keyframes`
-	from { opacity: 0; }
-	to { opacity: 1; }
-`;
-
 // Arrow keys, Home and End for a row of tabs with automatic activation (§11).
 const rovingKeyDown = <K extends string, >(event: React.KeyboardEvent, keys: K[], current: K, select: React.Dispatch<K>, idPrefix: string): void => {
 	const index = keys.indexOf(current);
@@ -2333,199 +2607,1093 @@ const marquee = keyframes`
 	to { transform: translateX(-50%); }
 `;
 
-// Two full-width, edge-faded rows of university logos that scroll forever by
-// themselves (§7.2): the top row right to left, the bottom row left to right,
-// at slightly different speeds. Each row is rendered twice for a seamless loop
-// (the copy is hidden from assistive tech). Every logo gets the same box, so
-// wordmarks and seals look even. It always runs by itself, also under reduced
-// motion and with no pause button (owner's decision); hovering a row pauses it.
-const LOGO_ROWS = [
-	UNIVERSITY_LOGOS.filter((_logo, index) => index % 2 === 0),
-	UNIVERSITY_LOGOS.filter((_logo, index) => index % 2 === 1),
-];
+// Logos for "All": one sector after another in turn, so the row mixes sectors.
+const mixBySector = (organizations: Organization[]): Organization[] => {
+	const bySector = SECTORS.map((sector) => organizations.filter((organization) => organization.sector === sector.key));
+	const longest = Math.max(0, ...bySector.map((list) => list.length));
+
+	return Array.from({ length: longest }, (_value, index) => bySector.map((list) => list[index]))
+		.flat()
+		.filter(Boolean);
+};
+
+const LOGO_LIMIT = { phone: 8, desktop: 12 } as const;
+const STAT_ACCENTS = [ brand.orange, brand.blue, brand.navy ];
+const SECTOR_ICONS = Object.fromEntries(SECTORS.map((sector) => [ sector.key, sector.icon ])) as Record<SectorKey, SvgIconComponent>;
+
+// One card: the logo, or the sector icon with the name (the canvas design).
+const LogoCard = ({ organization, copy }: { organization: Organization; copy?: boolean }): React.JSX.Element => {
+	const Icon = SECTOR_ICONS[organization.sector];
+
+	return (
+		<Box sx={{ width: '100%', height: { xs: 72, md: 76 }, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: { xs: 1, md: 1.25 }, px: { xs: 1.25, md: 1.75 }, border: '1px solid #e3ebf6', borderRadius: radius.md, bgcolor: brand.white }}>
+			{organization.src ? (
+				<Box
+					component='img'
+					src={organization.src}
+					alt={copy ? '' : organization.name}
+					title={copy ? undefined : organization.name}
+					loading='lazy'
+					decoding='async'
+					referrerPolicy='no-referrer'
+					draggable={false}
+					sx={{ display: 'block', maxWidth: '100%', height: { xs: 44, md: 48 }, objectFit: 'contain' }}
+				/>
+			) : (
+				<>
+					<Icon aria-hidden sx={{ fontSize: { xs: 22, md: 24 }, color: brand.borderStrong, flexShrink: 0 }} />
+					<Box component='span' sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 500, lineHeight: 1.3, color: brand.textSecondary }}>{organization.name}</Box>
+				</>
+			)}
+		</Box>
+	);
+};
+
+const chipSx = (active: boolean): SxProps<Theme> => ({
+	flexShrink: 0,
+	height: 44,
+	px: 2,
+	display: 'inline-flex',
+	alignItems: 'center',
+	gap: 1,
+	border: `1px solid ${active ? brand.navy : brand.border}`,
+	borderRadius: radius.pill,
+	bgcolor: active ? brand.navy : brand.white,
+	color: active ? brand.white : brand.navy,
+	font: 'inherit',
+	fontSize: 15,
+	fontWeight: 500,
+	cursor: 'pointer',
+	whiteSpace: 'nowrap',
+	transition: `background-color ${motion.base}ms ${motion.ease}`,
+	'&:hover': { bgcolor: active ? brand.navy : brand.blueLight },
+	...focusRing(),
+});
 
 const TrustedBy = (): React.JSX.Element => {
-	const logoList = (logos: typeof UNIVERSITY_LOGOS, copy: boolean): React.JSX.Element => (
-		<Box
-			component='ul'
-			aria-hidden={copy || undefined}
-			sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, gap: { xs: 4, md: 7 }, listStyle: 'none', m: 0, p: 0, pr: { xs: 4, md: 7 } }}
-		>
-			{logos.map((logo) => (
-				<Box component='li' key={logo.name} sx={{ flexShrink: 0, width: { xs: 96, md: 128 }, height: { xs: 52, md: 68 }, display: 'flex' }}>
-					<Box
-						component='img'
-						src={logo.src}
-						alt={copy ? '' : logo.name}
-						title={copy ? undefined : logo.name}
-						loading='lazy'
-						decoding='async'
-						referrerPolicy='no-referrer'
-						draggable={false}
-						sx={{ display: 'block', width: '100%', height: '100%', minHeight: 0, objectFit: 'contain', transition: `transform ${motion.base}ms ${motion.ease}`, '&:hover': { transform: 'scale(1.08)' } }}
-					/>
+	const [ sector, setSector ] = useState<SectorKey | 'all'>('all');
+	const [ paused, setPaused ] = useState(false);
+	const [ expanded, setExpanded ] = useState(false);
+	const all = sector === 'all';
+	const shown = all ? mixBySector(ORGANIZATIONS) : ORGANIZATIONS.filter((organization) => organization.sector === sector);
+	const sectorLabel = SECTORS.find((item) => item.key === sector)?.label;
+	const chips = [ { key: 'all' as const, label: strings.trustedBy.all, icon: AppsRounded }, ...SECTORS ];
+
+	const choose = (next: SectorKey | 'all'): void => {
+		setSector(next);
+		setExpanded(false);
+	};
+
+	const grid = (limit: number, columns: Record<string, string>, display: Record<string, string>): React.JSX.Element => (
+		<>
+			<Box
+				component='ul'
+				aria-label={sectorLabel ? `${sectorLabel} ${strings.trustedBy.sectorListLabel}` : strings.trustedBy.listLabel}
+				sx={{ display, gridTemplateColumns: columns, gap: { xs: 1.5, md: 2 }, listStyle: 'none', m: 0, p: 0 }}
+			>
+				{(expanded ? shown : shown.slice(0, limit)).map((organization) => (
+					<Box component='li' key={organization.name}><LogoCard organization={organization} /></Box>
+				))}
+			</Box>
+			{shown.length > limit && (
+				<Box sx={{ display, mt: { xs: 2.5, md: 3 }, justifyContent: 'center' }}>
+					<Button
+						variant='outlined'
+						onClick={() => setExpanded(!expanded)}
+						sx={{ minHeight: 48, px: 3, width: { xs: '100%', md: 'auto' }, color: brand.blueDark, borderColor: brand.blueDark, borderWidth: 1.5, bgcolor: brand.white, '&:hover': { borderColor: brand.blueDark, bgcolor: brand.blueLight }, ...focusRing() }}
+					>
+						{expanded ? strings.trustedBy.showFewer : strings.trustedBy.showAll}
+					</Button>
 				</Box>
-			))}
-		</Box>
+			)}
+		</>
 	);
 
 	return (
-		<Box component='section' id='trusted-by' aria-labelledby='trusted-by-title' sx={{ bgcolor: brand.white, py: { xs: 5, md: 7 }, overflow: 'hidden', scrollMarginTop: layout.navH }}>
+		<Box component='section' id='trusted-by' aria-labelledby='trusted-by-title' sx={{ bgcolor: brand.surfaceSubtle, pt: { xs: 7, md: 10 }, pb: { xs: 6, md: 9 }, overflow: 'hidden', scrollMarginTop: layout.navH }}>
 			<Container maxWidth={false} sx={{ maxWidth: layout.container, px: layout.gutter }}>
-				{/* Brand colors: navy text, blue highlight (large text, 3.9:1), orange accents
-				    (orange is 2.1:1 on white, so it is never used for text). */}
-				<Box data-reveal sx={{ textAlign: 'center', maxWidth: 760, mx: 'auto', mb: { xs: 4, md: 5 } }}>
-					<Box sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 1, md: 1.25 }, mb: 1.5 }}>
+				{/* Navy text, dark-blue highlight, orange accents (orange is 2.1:1 on white, so never text). */}
+				<Box data-reveal sx={{ textAlign: 'center', maxWidth: 760, mx: 'auto' }}>
+					<Box sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 1, md: 1.25 }, mb: { xs: 1.5, md: 1.75 } }}>
 						<Box aria-hidden sx={{ width: { xs: 16, md: 24 }, height: 3, flexShrink: 0, borderRadius: radius.pill, bgcolor: brand.orange }} />
-						<Typography component='p' sx={{ fontSize: { xs: 11.5, md: 13 }, fontWeight: 700, letterSpacing: { xs: '0.06em', md: '0.1em' }, textTransform: 'uppercase', whiteSpace: 'nowrap', color: brand.navy }}>
+						<Typography component='p' sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 700, letterSpacing: { xs: '0.08em', md: '0.1em' }, textTransform: 'uppercase', whiteSpace: 'nowrap', color: brand.blueDark }}>
 							{strings.trustedBy.eyebrow}
 						</Typography>
 						<Box aria-hidden sx={{ width: { xs: 16, md: 24 }, height: 3, flexShrink: 0, borderRadius: radius.pill, bgcolor: brand.orange }} />
 					</Box>
-					<Typography variant='h2' id='trusted-by-title' sx={{ color: brand.navy, fontSize: 'clamp(1.625rem, 1.25rem + 1.5vw, 2.375rem)' }}>
+					<Typography variant='h2' id='trusted-by-title' sx={{ color: brand.navy, fontSize: { xs: 28, md: 40 }, lineHeight: { xs: 1.2, md: 1.15 }, letterSpacing: { xs: '-0.01em', md: '-0.02em' } }}>
 						{strings.trustedBy.titleStart}
-						<Box component='span' sx={{ color: brand.blue }}>{strings.trustedBy.titleHighlight}</Box>
+						<Box component='span' sx={{ color: brand.blueDark }}>{strings.trustedBy.titleHighlight}</Box>
 						{strings.trustedBy.titleEnd}
 					</Typography>
-					<Box aria-hidden sx={{ width: 56, height: 4, borderRadius: radius.pill, bgcolor: brand.orange, mx: 'auto', my: 2 }} />
-					<Typography sx={{ fontSize: { xs: 15, md: 17 }, color: brand.navy, opacity: 0.8 }}>
+					<Typography sx={{ mt: { xs: 1.5, md: 2 }, fontSize: { xs: 15, md: 17 }, lineHeight: 1.55, color: brand.textSecondary }}>
 						{strings.trustedBy.subtitle}
 					</Typography>
 				</Box>
 			</Container>
 
-			<Box
-				role='list'
-				aria-label={strings.trustedBy.listLabel}
-				sx={{
-					display: 'grid',
-					gap: { xs: 2.5, md: 3.5 },
-					// Both edges fade to the page background.
-					maskImage: 'linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)',
-					WebkitMaskImage: 'linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)',
-				}}
-			>
-				{LOGO_ROWS.map((logos, row) => (
-					<Box key={row} role='listitem' sx={{ overflow: 'hidden', '&:hover .ek-marquee': { animationPlayState: 'paused' } }}>
+			{ORGANIZATIONS.length > 0 ? (
+				<>
+					{/* Sector filter; on wide screens "All" adds the marquee's pause button after a divider.
+					    Phones scroll the chips sideways, with a fade on the right edge. */}
+					<Box sx={{ position: 'relative', mt: { xs: 3, md: 4 } }}>
+						<Box sx={{ display: 'flex', justifyContent: { md: 'center' }, alignItems: 'center', gap: 1, px: layout.gutter, overflowX: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+							<Box role='group' aria-label={strings.trustedBy.filterLabel} sx={{ display: 'flex', gap: 1 }}>
+								{chips.map((item) => {
+									const Icon = item.icon;
+									const active = item.key === sector;
+
+									return (
+										<Box key={item.key} component='button' type='button' aria-pressed={active} onClick={() => choose(item.key)} sx={chipSx(active)}>
+											<Icon aria-hidden sx={{ display: { xs: 'none', md: 'block' }, fontSize: 18, color: active ? brand.white : brand.blueDark }} />
+											{item.label}
+										</Box>
+									);
+								})}
+							</Box>
+							{all && (
+								<Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+									<Box aria-hidden sx={{ width: '1px', height: 28, mx: 0.5, bgcolor: brand.border }} />
+									<IconButton
+										onClick={() => setPaused(!paused)}
+										aria-label={paused ? strings.trustedBy.play : strings.trustedBy.pause}
+										sx={{ width: 44, height: 44, border: `1px solid ${brand.border}`, bgcolor: brand.white, color: brand.navy, '&:hover': { bgcolor: brand.blueLight }, ...focusRing() }}
+									>
+										{paused ? <PlayArrowRounded sx={{ fontSize: 20 }} /> : <PauseRounded sx={{ fontSize: 20 }} />}
+									</IconButton>
+								</Box>
+							)}
+						</Box>
+						<Box aria-hidden sx={{ display: { md: 'none' }, position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, pointerEvents: 'none', background: `linear-gradient(to right, rgba(244, 248, 253, 0), ${brand.surfaceSubtle})` }} />
+					</Box>
+
+					{/* Wide screens, "All": one slow row that loops (the copy is hidden from
+					    assistive tech). Hover or the pause button stops it; under reduced
+					    motion it stands still and scrolls sideways by hand. */}
+					{all && (
 						<Box
-							className='ek-marquee'
 							sx={{
-								display: 'flex',
-								width: 'max-content',
-								// ≈ 35 px/s (top) and 30 px/s (bottom) on desktop.
-								animation: `${marquee} ${logos.length * (row === 0 ? 5.5 : 6.5)}s linear infinite`,
-								animationDirection: row === 0 ? 'normal' : 'reverse',
+								display: { xs: 'none', md: 'block' },
+								mt: 4.5,
+								overflow: 'hidden',
+								maskImage: 'linear-gradient(to right, transparent, #000 10%, #000 90%, transparent)',
+								WebkitMaskImage: 'linear-gradient(to right, transparent, #000 10%, #000 90%, transparent)',
+								'&:hover .ek-marquee': { animationPlayState: 'paused' },
+								[reducedMotion]: { overflowX: 'auto' },
 							}}
 						>
-							{logoList(logos, false)}
-							{logoList(logos, true)}
+							<Box
+								component='ul'
+								className='ek-marquee'
+								aria-label={strings.trustedBy.listLabel}
+								sx={{
+									display: 'flex',
+									width: 'max-content',
+									listStyle: 'none',
+									m: 0,
+									p: 0,
+									// ≈ 31 px/s, as on the canvas.
+									animation: `${marquee} ${shown.length * 7}s linear infinite`,
+									animationPlayState: paused ? 'paused' : 'running',
+									[reducedMotion]: { animation: 'none' },
+								}}
+							>
+								{[ false, true ].flatMap((copy) => shown.map((organization) => (
+									<Box component='li' key={`${organization.name}${copy ? '-copy' : ''}`} aria-hidden={copy || undefined} sx={{ flexShrink: 0, width: 216, pr: 2.5, boxSizing: 'border-box' }}>
+										<LogoCard organization={organization} copy={copy} />
+									</Box>
+								)))}
+							</Box>
+						</Box>
+					)}
+
+					<Container maxWidth={false} sx={{ maxWidth: layout.container, px: layout.gutter }}>
+						{/* Phones: a still two-column grid. */}
+						<Box sx={{ display: { md: 'none' }, mt: 3 }}>{grid(LOGO_LIMIT.phone, { xs: 'repeat(2, minmax(0, 1fr))' }, { xs: 'grid', md: 'none' })}</Box>
+						{/* Wide screens, one sector: a still grid of that sector's logos. */}
+						{!all && <Box sx={{ display: { xs: 'none', md: 'block' }, mt: 4.5 }}>{grid(LOGO_LIMIT.desktop, { md: 'repeat(4, minmax(0, 1fr))', lg: 'repeat(6, minmax(0, 1fr))' }, { xs: 'none', md: 'grid' })}</Box>}
+					</Container>
+				</>
+			) : (
+				<Container maxWidth={false} sx={{ maxWidth: layout.container, px: layout.gutter }}>
+					{TRUST_STATS.length > 0 && (
+						<Box component='dl' sx={{ m: 0, mt: { xs: 4, md: 5 }, mx: 'auto', maxWidth: 1080, display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: `repeat(${Math.min(TRUST_STATS.length, 3)}, minmax(0, 1fr))` }, gap: 3 }}>
+							{TRUST_STATS.map((stat, index) => (
+								<Box key={stat.label} data-reveal sx={{ '--ek-reveal-index': index, display: 'flex', flexDirection: 'column-reverse', gap: 0.75, p: '28px 28px 24px', border: '1px solid #e3ebf6', borderTop: `4px solid ${STAT_ACCENTS[index % STAT_ACCENTS.length]}`, borderRadius: '16px', bgcolor: brand.white }}>
+									<Box component='dt' sx={{ fontSize: 15, lineHeight: 1.45, color: brand.textSecondary }}>{stat.label}</Box>
+									<Box component='dd' sx={{ m: 0, fontSize: { xs: 36, md: 44 }, lineHeight: 1.1, fontWeight: 700, letterSpacing: '-0.02em', color: brand.navy }}>{stat.value}</Box>
+								</Box>
+							))}
+						</Box>
+					)}
+					<Box sx={{ mt: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 1.5 }}>
+						<Typography component='span' sx={{ fontSize: 14, fontWeight: 500, color: brand.textSecondary }}>{strings.trustedBy.forLabel}</Typography>
+						<Box component='ul' aria-label={strings.trustedBy.forListLabel} sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1 }}>
+							{SECTORS.map(({ key, label, icon: Icon }) => (
+								<Box component='li' key={key} sx={{ height: 36, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.75, borderRadius: radius.pill, bgcolor: brand.blueLight, fontSize: 14, fontWeight: 500 }}>
+									<Icon aria-hidden sx={{ fontSize: 16, color: brand.blueDark }} />
+									{label}
+								</Box>
+							))}
+						</Box>
+					</Box>
+				</Container>
+			)}
+
+			<Typography sx={{ mt: { xs: 2.5, md: 4 }, px: layout.gutter, fontSize: { xs: 13, md: 14 }, lineHeight: 1.5, color: brand.textSecondary, textAlign: 'center' }}>
+				{strings.trustedBy.consent}
+				<Box component='br' sx={{ display: { md: 'none' } }} />
+				{' '}
+				<Link href={CONTACT_URL || BDREN_URL} sx={{ color: brand.blueDark, fontWeight: 500, ...focusRing() }}>{strings.trustedBy.tellUs}</Link>
+			</Typography>
+		</Box>
+	);
+};
+
+// ── How it works (UpdateHomePageDesignplan.md §4.4) ──
+// Three numbered cards, each with a small picture drawn with boxes.
+
+const HOW_CARD_BORDER = '#e3ebf6';
+
+// A made-up 9 × 9 pattern that reads as a QR code; it is not scannable.
+const HOW_QR = [
+	'111111101',
+	'100000100',
+	'101110101',
+	'101110010',
+	'101110111',
+	'100000100',
+	'111111101',
+	'000100010',
+	'101011011',
+].flatMap((row) => row.split('').map((bit) => bit === '1'));
+
+const HowStartArt = (): React.JSX.Element => (
+	<Box sx={{ width: { xs: 220, md: 248 }, borderRadius: { xs: '10px', md: radius.md }, bgcolor: brand.white, boxShadow: '0 8px 24px rgba(4, 44, 106, 0.10)', overflow: 'hidden' }}>
+		<Box sx={{ height: { xs: 18, md: 22 }, display: 'flex', alignItems: 'center', gap: 0.5, px: { xs: 1, md: 1.25 }, borderBottom: `1px solid ${HOW_CARD_BORDER}` }}>
+			{[ 0, 1, 2 ].map((dot) => <Box key={dot} sx={{ width: { xs: 5, md: 6 }, height: { xs: 5, md: 6 }, borderRadius: '50%', bgcolor: brand.border }} />)}
+		</Box>
+		<Box sx={{ p: { xs: '14px 14px 16px', md: '18px 16px 20px' }, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: { xs: '7px', md: 1 } }}>
+			<Box sx={{ width: '70%', height: { xs: 6, md: 7 }, borderRadius: radius.pill, bgcolor: brand.navy }} />
+			<Box sx={{ width: '50%', height: 5, borderRadius: radius.pill, bgcolor: brand.border }} />
+			<Box sx={{ position: 'relative', mt: 0.75, height: { xs: 30, md: 34 }, px: { xs: 1.5, md: 1.75 }, borderRadius: radius.sm, bgcolor: brand.orange, color: brand.navy, display: 'flex', alignItems: 'center', gap: 0.75, fontSize: { xs: 11, md: 12 }, fontWeight: 500 }}>
+				{strings.common.start}
+				<ArrowForwardRounded sx={{ fontSize: { xs: 12, md: 14 } }} />
+				<Box component='svg' viewBox='0 0 24 24' sx={{ position: 'absolute', right: { xs: -14, md: -16 }, bottom: { xs: -12, md: -14 }, width: { xs: 20, md: 22 }, height: { xs: 20, md: 22 } }}>
+					<path d='M5 3l14 7-6 1.6L10.5 18z' fill={brand.navy} stroke={brand.white} strokeWidth={1.5} strokeLinejoin='round' />
+				</Box>
+			</Box>
+		</Box>
+	</Box>
+);
+
+const HowShareArt = (): React.JSX.Element => (
+	<Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.75, md: 2.25 } }}>
+		<Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: '7px', md: 1 } }}>
+			<Box sx={{ height: { xs: 30, md: 34 }, display: 'flex', alignItems: 'center', gap: 0.75, pl: { xs: 1, md: 1.25 }, pr: 0.75, border: `1px solid ${brand.border}`, borderRadius: radius.sm, bgcolor: brand.white }}>
+				<LinkRounded sx={{ fontSize: { xs: 12, md: 14 }, color: brand.textSecondary }} />
+				<Box component='span' sx={{ fontFamily: '\'Roboto Mono\', ui-monospace, monospace', fontSize: { xs: 10, md: 11 }, fontWeight: 500 }}>/team-weekly</Box>
+				<Box component='span' sx={{ ml: 0.5, height: { xs: 20, md: 22 }, px: 1, borderRadius: '6px', bgcolor: brand.orangeLight, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: 9, md: 10 }, fontWeight: 700 }}>
+					<CheckRounded sx={{ fontSize: 11, display: { xs: 'none', md: 'block' } }} />
+					Copied
+				</Box>
+			</Box>
+			<Box sx={{ alignSelf: 'flex-start', maxWidth: { xs: 150, md: 168 }, px: { xs: 1, md: 1.25 }, py: { xs: 0.75, md: 1 }, borderRadius: '10px 10px 10px 4px', bgcolor: brand.white, border: `1px solid ${HOW_CARD_BORDER}`, fontSize: { xs: 10, md: 11 }, lineHeight: 1.35 }}>
+				<Box sx={{ fontSize: { xs: 8, md: 9 }, fontWeight: 700, color: brand.blueDark }}>You</Box>
+				Join our meeting at 10:00: …/team-weekly
+			</Box>
+		</Box>
+		<Box sx={{ p: { xs: 0.75, md: 1 }, borderRadius: { xs: radius.sm, md: '10px' }, bgcolor: brand.white, boxShadow: '0 8px 24px rgba(4, 44, 106, 0.10)' }}>
+			<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(9, 7px)', md: 'repeat(9, 8px)' }, gridAutoRows: { xs: '7px', md: '8px' } }}>
+				{HOW_QR.map((filled, index) => <Box key={index} sx={{ bgcolor: filled ? brand.navy : 'transparent' }} />)}
+			</Box>
+		</Box>
+	</Box>
+);
+
+const HOW_PEOPLE = [
+	{ initials: 'FA', color: brand.orange, speaking: true },
+	{ initials: 'RK', color: '#1668c4' },
+	{ initials: 'NS', color: '#6d42c7' },
+	{ initials: 'TM', color: '#1d7a50' },
+];
+
+const HowMeetArt = (): React.JSX.Element => (
+	<Box sx={{ width: { xs: 220, md: 248 }, p: { xs: '7px', md: 1 }, borderRadius: { xs: '10px', md: radius.md }, bgcolor: brand.navy900, boxShadow: '0 8px 24px rgba(4, 44, 106, 0.18)', display: 'flex', flexDirection: 'column', gap: { xs: '5px', md: 0.75 } }}>
+		<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+			<Box component='span' sx={{ fontFamily: '\'Roboto Mono\', ui-monospace, monospace', fontSize: { xs: 8, md: 9 }, color: tour.windowText }}>team-weekly</Box>
+			<Box component='span' sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: '1px', borderRadius: radius.pill, bgcolor: '#d93b3b', color: brand.white, fontSize: { xs: 7, md: 8 }, fontWeight: 700 }}>
+				<Box component='span' sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: brand.white }} />
+				REC
+			</Box>
+		</Box>
+		<Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: { xs: 0.5, md: '5px' } }}>
+			{HOW_PEOPLE.map((person) => (
+				<Box key={person.initials} sx={{ height: { xs: 32, md: 40 }, borderRadius: { xs: '5px', md: '6px' }, bgcolor: brand.navy700, display: 'grid', placeItems: 'center', boxShadow: person.speaking ? `inset 0 0 0 2px ${tour.green}` : 'none' }}>
+					<MockAvatar initials={person.initials} color={person.color} size={20} />
+				</Box>
+			))}
+		</Box>
+		<Box sx={{ px: 1, py: 0.5, borderRadius: { xs: '5px', md: '6px' }, bgcolor: 'rgba(0, 0, 0, 0.55)', color: brand.white, fontSize: { xs: 8, md: 9 }, lineHeight: 1.35, textAlign: 'center' }}>
+			…so let&apos;s review the Q3 numbers first.
+		</Box>
+	</Box>
+);
+
+const HOW_STEPS: { title: string; body: string; Art: () => React.JSX.Element }[] = [
+	{ title: 'Start a meeting', body: 'One click, in your browser. Nothing to install.', Art: HowStartArt },
+	{ title: 'Share the link', body: 'Send it by WhatsApp or email, or show the QR code on screen.', Art: HowShareArt },
+	{ title: 'Meet and record', body: 'Share your screen, chat, record and turn on live captions.', Art: HowMeetArt },
+];
+
+const HowItWorks = ({ onStart }: { onStart: () => void }): React.JSX.Element => (
+	<Box component='section' id='how-it-works' aria-labelledby='how-it-works-title' sx={{ bgcolor: brand.white, pt: { xs: 7, md: 11 }, pb: { xs: 6, md: 10 }, scrollMarginTop: layout.navH }}>
+		<Container maxWidth={false} sx={{ maxWidth: layout.container, px: layout.gutter }}>
+			<Box data-reveal sx={{ textAlign: 'center', maxWidth: 760, mx: 'auto' }}>
+				<Box sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 1, md: 1.25 }, mb: { xs: 1.5, md: 1.75 } }}>
+					<Box aria-hidden sx={{ width: { xs: 16, md: 24 }, height: 3, flexShrink: 0, borderRadius: radius.pill, bgcolor: brand.orange }} />
+					<Typography component='p' sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 700, letterSpacing: { xs: '0.08em', md: '0.1em' }, textTransform: 'uppercase', whiteSpace: 'nowrap', color: brand.blueDark }}>
+						{strings.howItWorks.eyebrow}
+					</Typography>
+					<Box aria-hidden sx={{ width: { xs: 16, md: 24 }, height: 3, flexShrink: 0, borderRadius: radius.pill, bgcolor: brand.orange }} />
+				</Box>
+				<Typography variant='h2' id='how-it-works-title' sx={{ color: brand.navy, fontSize: { xs: 28, md: 40 }, lineHeight: { xs: 1.2, md: 1.15 }, letterSpacing: { xs: '-0.01em', md: '-0.02em' } }}>
+					{strings.howItWorks.titleStart}
+					<Box component='span' sx={{ color: brand.blueDark }}>{strings.howItWorks.titleHighlight}</Box>
+				</Typography>
+			</Box>
+
+			<Box component='ol' sx={{ m: 0, mt: { xs: 3.5, md: 6 }, p: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }, gap: { xs: 2, md: 3 }, maxWidth: { sm: 560, lg: 'none' }, mx: { sm: 'auto' } }}>
+				{HOW_STEPS.map(({ title, body, Art }, index) => (
+					<Box
+						component='li'
+						key={title}
+						data-reveal
+						sx={{ '--ek-reveal-index': index, display: 'flex', flexDirection: 'column', border: `1px solid ${HOW_CARD_BORDER}`, borderRadius: { xs: '16px', md: radius.lg }, bgcolor: brand.white, boxShadow: '0 1px 2px rgba(4, 44, 106, 0.04)', overflow: 'hidden' }}
+					>
+						<Box aria-hidden sx={{ height: { xs: 140, md: 168 }, bgcolor: brand.surfaceSubtle, borderBottom: `1px solid ${HOW_CARD_BORDER}`, display: 'grid', placeItems: 'center' }}>
+							<Art />
+						</Box>
+						<Box sx={{ p: { xs: '18px 20px 20px', md: '24px 28px 28px' }, display: 'flex', flexDirection: 'column', gap: { xs: 1, md: 1.25 } }}>
+							<Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.25, md: 1.5 } }}>
+								<Box component='span' aria-hidden sx={{ width: { xs: 28, md: 32 }, height: { xs: 28, md: 32 }, flexShrink: 0, borderRadius: '50%', bgcolor: brand.navy, color: brand.white, display: 'grid', placeItems: 'center', fontSize: { xs: 14, md: 15 }, fontWeight: 700 }}>
+									{index + 1}
+								</Box>
+								<Typography component='h3' sx={{ m: 0, fontSize: { xs: 19, md: 21 }, lineHeight: 1.25, fontWeight: 700, color: brand.navy }}>
+									<Box component='span' sx={visuallyHidden}>{`${strings.howItWorks.step} ${index + 1}: `}</Box>
+									{title}
+								</Typography>
+							</Box>
+							<Typography sx={{ fontSize: { xs: 15, md: 16 }, lineHeight: { xs: 1.55, md: 1.6 }, color: brand.textSecondary }}>{body}</Typography>
 						</Box>
 					</Box>
 				))}
+			</Box>
+
+			<Box sx={{ mt: { xs: 3, md: 4.5 }, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'center', gap: { xs: 2, md: 3 }, maxWidth: { sm: 560, md: 'none' }, mx: { sm: 'auto' } }}>
+				<Typography sx={{ display: 'flex', alignItems: { xs: 'flex-start', md: 'center' }, gap: 1, fontSize: { xs: 14, md: 15 }, lineHeight: 1.5, color: brand.textSecondary }}>
+					<InfoOutlined aria-hidden sx={{ fontSize: 18, color: brand.blueDark, flexShrink: 0, mt: { xs: '1px', md: 0 } }} />
+					{strings.howItWorks.accountNote}
+				</Typography>
+				<Button
+					variant='outlined'
+					endIcon={<ArrowForwardRounded />}
+					onClick={onStart}
+					onMouseEnter={prefetchApp}
+					onFocus={prefetchApp}
+					sx={{ flexShrink: 0, minHeight: { xs: 52, md: 48 }, px: 2.5, fontSize: { xs: 16, md: 15 }, color: brand.blueDark, borderColor: brand.blueDark, borderWidth: 1.5, bgcolor: brand.white, '&:hover': { borderColor: brand.blueDark, bgcolor: brand.blueLight }, ...focusRing() }}
+				>
+					{strings.common.start}
+				</Button>
+			</Box>
+		</Container>
+	</Box>
+);
+
+// ── Feature tour (§7.3) ──
+// A list of features on the left that advances by itself, and a blue "stage" on
+// the right that shows each feature as a small app window drawn with boxes.
+
+// Dark video-tile backgrounds, each in its own tint.
+const tileTint = {
+	slate: 'linear-gradient(140deg, #2B3658 0%, #161D35 100%)',
+	violet: 'linear-gradient(140deg, #3B2D66 0%, #1A1533 100%)',
+	teal: 'linear-gradient(140deg, #134552 0%, #0C1D2A 100%)',
+	navy: 'linear-gradient(140deg, #1C3C78 0%, #0F1A3A 100%)',
+	rust: 'linear-gradient(140deg, #52302A 0%, #1F1517 100%)',
+	moss: 'linear-gradient(140deg, #22463A 0%, #0F1F1B 100%)',
+} as const;
+
+const TOUR_CYCLE_MS = 6000;
+
+const tourFill = keyframes`
+	from { transform: scaleY(0); }
+	to { transform: scaleY(1); }
+`;
+
+const tourBob = keyframes`
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-6px); }
+`;
+
+const tourBlink = keyframes`
+	50% { opacity: 0.25; }
+`;
+
+type TourColor = 'blue' | 'green' | 'red' | 'amber' | 'purple';
+type TourStatus = { text: string; color: 'red' | 'green' | 'amber'; solid?: boolean; blink?: boolean };
+type TourCard = { icon: SvgIconComponent; color: TourColor; title: string; subtitle: string; corner: 'tr' | 'bl' };
+type TourPerson = { name: string; initials: string; tint: keyof typeof tileTint };
+
+const REC_STATUS: TourStatus = { text: 'REC 12:04', color: 'red', blink: true };
+const TOUR_CONTROLS = [ MicRounded, VideocamRounded, ScreenShareRounded, PanToolRounded ];
+// Cards stick out 24 px past the window, inside the stage padding: top right below
+// the slide title, bottom left over the empty start of the control bar. Where the
+// window is narrow, the controls reach that corner, so the card drops below them.
+const narrowWindow = '@media (min-width: 640px) and (max-width: 767.95px), (min-width: 1024px) and (max-width: 1279.95px)';
+const CARD_CORNERS = { tr: { top: 108, right: -24 }, bl: { bottom: -20, left: -24, [narrowWindow]: { bottom: -44 } } } as const;
+
+const TOUR_PEOPLE: Record<string, TourPerson> = {
+	ahmed: { name: 'Dr. Ahmed', initials: 'FA', tint: 'navy' },
+	nadia: { name: 'Nadia', initials: 'NA', tint: 'violet' },
+	rahim: { name: 'Rahim', initials: 'RK', tint: 'teal' },
+	sadia: { name: 'Sadia', initials: 'SH', tint: 'rust' },
+	tanvir: { name: 'Tanvir', initials: 'TM', tint: 'moss' },
+	mitu: { name: 'Mitu', initials: 'MR', tint: 'slate' },
+};
+
+const WEBINAR_QUESTIONS = [
+	{ name: 'Arif', text: 'How do I apply for the CSE programme?', votes: 48 },
+	{ name: 'Mim', text: 'Will the slides be shared?', votes: 31 },
+	{ name: 'Tanvir', text: 'Are there scholarships?', votes: 19 },
+];
+
+const TOUR_TRANSCRIPT = [
+	{ time: '41:52', speaker: 'Dr. Ahmed', text: 'The client sends SYN to open the connection.' },
+	{ time: '42:01', speaker: 'Dr. Ahmed', text: 'The server answers with SYN-ACK.' },
+	{ time: '42:05', speaker: 'Nadia', text: 'And then the client sends ACK?' },
+	{ time: '42:10', speaker: 'Dr. Ahmed', text: 'Exactly, the connection is open.' },
+];
+
+const BREAKOUT_ROOMS = [
+	{ name: 'Room 1 · Sockets', people: [ 'NA', 'RK', 'SH', 'TM' ] },
+	{ name: 'Room 2 · Routing', people: [ 'MR', 'IH', 'AS', 'JK', 'LB' ] },
+	{ name: 'Room 3 · DNS', people: [ 'FR', 'MH', 'SK', 'NB' ] },
+	{ name: 'Room 4 · HTTP/3', people: [ 'TA', 'RP', 'ZI' ] },
+];
+const AVATAR_COLORS: TourColor[] = [ 'blue', 'purple', 'amber', 'green' ];
+
+const TOUR_CHAT = [
+	{ name: 'Nadia', text: 'Could you share today\'s slides?' },
+	{ text: 'Here they are, with the lab sheet.', own: true },
+];
+
+const StatusPill = ({ status }: { status: TourStatus }): React.JSX.Element => (
+	<Box
+		component='span'
+		sx={{
+			justifySelf: 'end',
+			display: 'inline-flex',
+			alignItems: 'center',
+			gap: '6px',
+			height: 22,
+			px: '8px',
+			borderRadius: radius.pill,
+			bgcolor: status.solid ? tour[status.color] : `color-mix(in srgb, ${tour[status.color]} 16%, transparent)`,
+			color: status.solid ? tour.white : tour[status.color],
+			fontSize: 11,
+			fontWeight: 700,
+			letterSpacing: '0.02em',
+			whiteSpace: 'nowrap',
+		}}
+	>
+		<Box
+			component='span'
+			sx={{
+				width: 6,
+				height: 6,
+				borderRadius: '50%',
+				bgcolor: 'currentColor',
+				animation: status.blink ? `${tourBlink} 1.2s steps(2, jump-none) infinite` : 'none',
+				[reducedMotion]: { animation: 'none' },
+			}}
+		/>
+		{status.text}
+	</Box>
+);
+
+// The dark app window every scene sits in: title bar, content, control bar.
+const AppWindow = ({ title, status = REC_STATUS, children }: { title: string; status?: TourStatus; children: React.ReactNode }): React.JSX.Element => (
+	<Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', bgcolor: tour.window, borderRadius: '16px', boxShadow: tour.windowShadow, overflow: 'hidden' }}>
+		<Box sx={{ height: 40, flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr minmax(0, auto) 1fr', alignItems: 'center', gap: 1, px: '14px', borderBottom: `1px solid ${tour.windowLine}` }}>
+			<Box sx={{ display: 'flex', gap: '6px' }}>
+				{[ 0, 1, 2 ].map((dot) => <Box key={dot} sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: tour.windowDot }} />)}
+			</Box>
+			<Box sx={{ minWidth: 0, fontSize: 12, fontWeight: 500, color: tour.windowText, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</Box>
+			<StatusPill status={status} />
+		</Box>
+		<Box sx={{ height: 300, display: 'flex', gap: '10px', p: '12px', minWidth: 0, [phoneWidth]: { height: 230, gap: '8px', p: '10px' } }}>{children}</Box>
+		<Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', py: '12px', borderTop: `1px solid ${tour.windowLine}` }}>
+			{TOUR_CONTROLS.map((Icon, index) => (
+				<Box key={index} sx={{ width: 34, height: 34, borderRadius: '10px', bgcolor: tour.control, color: tour.windowText, display: 'grid', placeItems: 'center' }}>
+					<Icon sx={{ fontSize: 17 }} />
+				</Box>
+			))}
+			<Box sx={{ height: 34, ml: '6px', px: '14px', borderRadius: '10px', bgcolor: tour.red, color: tour.white, display: 'inline-flex', alignItems: 'center', fontSize: 12, fontWeight: 600 }}>Leave</Box>
+		</Box>
+	</Box>
+);
+
+const FloatCard = ({ card }: { card: TourCard }): React.JSX.Element => {
+	const Icon = card.icon;
+
+	return (
+		<Box
+			sx={{
+				position: 'absolute',
+				...CARD_CORNERS[card.corner],
+				display: 'flex',
+				alignItems: 'center',
+				gap: '10px',
+				p: '12px 14px',
+				borderRadius: '14px',
+				bgcolor: tour.white,
+				boxShadow: tour.cardShadow,
+				whiteSpace: 'nowrap',
+				animation: `${tourBob} 5s ease-in-out infinite`,
+				animationDelay: card.corner === 'bl' ? '-2.5s' : '0s',
+				[reducedMotion]: { animation: 'none' },
+				[phoneWidth]: { display: 'none' },
+			}}
+		>
+			<Box sx={{ width: 32, height: 32, flexShrink: 0, borderRadius: '9px', bgcolor: tour[card.color], color: tour.white, display: 'grid', placeItems: 'center' }}>
+				<Icon sx={{ fontSize: 18 }} />
+			</Box>
+			<Box>
+				<Box sx={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, color: tour.ink }}>{card.title}</Box>
+				<Box sx={{ fontSize: 12, lineHeight: 1.35, color: tour.body }}>{card.subtitle}</Box>
 			</Box>
 		</Box>
 	);
 };
 
-const ProductChips = ({ transcriptionEnabled }: { transcriptionEnabled: boolean }): React.JSX.Element => {
-	const chips = CHIPS.filter((chip) => transcriptionEnabled || chip.key !== 'transcription');
-	const [ selected, setSelected ] = useState(chips[0].key);
-	const chip = chips.find((item) => item.key === selected) ?? chips[0];
+const TourTile = ({ person, speaking, flex }: { person: TourPerson; speaking?: boolean; flex?: number }): React.JSX.Element => (
+	<Box sx={{ position: 'relative', flex, minWidth: 0, minHeight: 0, borderRadius: '10px', background: tileTint[person.tint], boxShadow: speaking ? `inset 0 0 0 2px ${tour.green}` : 'none', display: 'grid', placeItems: 'center' }}>
+		<Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: 'rgba(255, 255, 255, 0.14)', color: tour.white, display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 600, [phoneWidth]: { width: 34, height: 34, fontSize: 12 } }}>
+			{person.initials}
+		</Box>
+		<Box sx={{ position: 'absolute', left: 6, bottom: 6, maxWidth: 'calc(100% - 12px)', px: '6px', py: '2px', borderRadius: '6px', bgcolor: 'rgba(0, 0, 0, 0.35)', color: tour.white, fontSize: 10, fontWeight: 500, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+			{person.name}
+		</Box>
+	</Box>
+);
+
+// The lecture slide shared by the classes and recording scenes.
+const TourSlide = ({ children }: { children?: React.ReactNode }): React.JSX.Element => (
+	<Box sx={{ position: 'relative', flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', gap: '6px', p: '16px', borderRadius: '10px', bgcolor: tour.white, overflow: 'hidden', [phoneWidth]: { p: '10px', gap: '4px' } }}>
+		<Box sx={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', color: tour.blue }}>CSE 341 · Week 6</Box>
+		<Box sx={{ fontSize: 16, fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.01em', color: tour.ink, [phoneWidth]: { fontSize: 12 } }}>Lecture 12: Transport layer</Box>
+		{[ '86%', '62%' ].map((width) => <Box key={width} sx={{ height: 6, width, borderRadius: radius.pill, bgcolor: tour.soft }} />)}
+		<Box sx={{ flex: 1, minHeight: 0, mt: '6px', display: 'flex', alignItems: 'flex-end', gap: '8%', px: '6%', borderBottom: `2px solid ${tour.line}` }}>
+			{[ 38, 56, 92, 48, 66 ].map((height, index) => (
+				<Box key={height} sx={{ flex: 1, height: `${height}%`, borderRadius: '5px 5px 0 0', bgcolor: index === 2 ? tour.blue : tour.slideBar }} />
+			))}
+		</Box>
+		{children}
+	</Box>
+);
+
+const ClassesScene = (): React.JSX.Element => (
+	<>
+		<Box sx={{ width: '30%', flexShrink: 0, display: 'grid', gridTemplateRows: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
+			<TourTile person={TOUR_PEOPLE.nadia} speaking />
+			<TourTile person={TOUR_PEOPLE.rahim} />
+			<TourTile person={TOUR_PEOPLE.sadia} />
+		</Box>
+		<TourSlide />
+	</>
+);
+
+const MeetingsScene = (): React.JSX.Element => (
+	<Box sx={{ flex: 1, minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridTemplateRows: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+		{[ 'ahmed', 'nadia', 'rahim', 'sadia', 'tanvir' ].map((key) => <TourTile key={key} person={TOUR_PEOPLE[key]} speaking={key === 'ahmed'} />)}
+		<Box sx={{ borderRadius: '10px', bgcolor: tour.control, color: tour.windowText, display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 600 }}>+7 more</Box>
+	</Box>
+);
+
+const WebinarsScene = (): React.JSX.Element => (
+	<>
+		<TourTile person={TOUR_PEOPLE.ahmed} speaking flex={1.6} />
+		<Box sx={{ width: '38%', flexShrink: 0, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px', p: '12px', borderRadius: '10px', bgcolor: tour.panel, overflow: 'hidden', [phoneWidth]: { width: '58%', p: '8px', gap: '6px' } }}>
+			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1 }}>
+				<Box sx={{ fontSize: 12, fontWeight: 700, color: tour.white }}>Q&amp;A</Box>
+				<Box sx={{ fontSize: 10, color: tour.windowText, whiteSpace: 'nowrap' }}>Top questions</Box>
+			</Box>
+			{WEBINAR_QUESTIONS.map((question) => (
+				<Box key={question.name} sx={{ display: 'flex', alignItems: 'flex-start', gap: '8px', p: '8px', borderRadius: '8px', bgcolor: tour.control, [phoneWidth]: { p: '6px', '&:nth-of-type(n+4)': { display: 'none' } } }}>
+					<Box sx={{ flex: 1, minWidth: 0 }}>
+						<Box sx={{ fontSize: 10, fontWeight: 600, color: tour.windowText }}>{question.name}</Box>
+						<Box sx={{ fontSize: 11, lineHeight: 1.35, color: tour.white, [phoneWidth]: { fontSize: 10 } }}>{question.text}</Box>
+					</Box>
+					<Box sx={{ flexShrink: 0, px: '6px', py: '2px', borderRadius: '6px', bgcolor: `color-mix(in srgb, ${tour.blue} 22%, transparent)`, color: tour.blueOnDark, fontSize: 10, fontWeight: 700 }}>▲ {question.votes}</Box>
+				</Box>
+			))}
+		</Box>
+	</>
+);
+
+const RecordingScene = (): React.JSX.Element => (
+	<Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+		<TourSlide>
+			<Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', bgcolor: 'rgba(11, 21, 48, 0.35)' }}>
+				<Box sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: tour.blue, color: tour.white, display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px -6px rgba(11, 92, 255, 0.7)' }}>
+					<PlayArrowRounded sx={{ fontSize: 32 }} />
+				</Box>
+			</Box>
+		</TourSlide>
+		<Box sx={{ flexShrink: 0 }}>
+			<Box sx={{ position: 'relative', height: 4, borderRadius: radius.pill, bgcolor: tour.control }}>
+				<Box sx={{ width: '42%', height: '100%', borderRadius: radius.pill, bgcolor: tour.blue }} />
+				<Box sx={{ position: 'absolute', left: '42%', top: '50%', width: 12, height: 12, borderRadius: '50%', bgcolor: tour.white, transform: 'translate(-50%, -50%)' }} />
+			</Box>
+			<Box sx={{ mt: '10px', display: 'flex', justifyContent: 'space-between', gap: 1, fontSize: 11, color: tour.windowText, whiteSpace: 'nowrap' }}>
+				<Box component='span' sx={{ fontVariantNumeric: 'tabular-nums' }}>21:16 / 50:30</Box>
+				<Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+					<CloudDoneRounded sx={{ fontSize: 14, color: tour.green }} />
+					Saved to cloud · HD
+				</Box>
+			</Box>
+		</Box>
+	</Box>
+);
+
+const TranscriptionScene = (): React.JSX.Element => (
+	<>
+		<Box sx={{ position: 'relative', flex: 1.1, minWidth: 0, display: 'flex' }}>
+			<TourTile person={TOUR_PEOPLE.ahmed} speaking flex={1} />
+			<Box sx={{ position: 'absolute', left: 10, right: 10, bottom: 32, p: '8px 10px', borderRadius: '8px', bgcolor: 'rgba(0, 0, 0, 0.62)', color: tour.white, fontSize: 12, lineHeight: 1.4, textAlign: 'center', [phoneWidth]: { fontSize: 10, p: '6px' } }}>
+				…then the client sends ACK, and the connection is open.
+			</Box>
+		</Box>
+		<Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px', p: '12px', borderRadius: '10px', bgcolor: tour.white, overflow: 'hidden', [phoneWidth]: { p: '8px', gap: '6px' } }}>
+			<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+				<Box sx={{ fontSize: 12, fontWeight: 700, color: tour.ink }}>Transcript</Box>
+				<SearchRounded sx={{ fontSize: 16, color: tour.muted }} />
+			</Box>
+			{TOUR_TRANSCRIPT.map((line) => (
+				<Box key={line.time} sx={{ display: 'flex', gap: '8px', [phoneWidth]: { '&:nth-of-type(n+5)': { display: 'none' } } }}>
+					<Box sx={{ flexShrink: 0, fontSize: 10, fontWeight: 500, lineHeight: 1.5, color: tour.muted, fontVariantNumeric: 'tabular-nums' }}>{line.time}</Box>
+					<Box sx={{ minWidth: 0 }}>
+						<Box sx={{ fontSize: 10, fontWeight: 700, color: tour.blue }}>{line.speaker}</Box>
+						<Box sx={{ fontSize: 11, lineHeight: 1.35, color: tour.ink, [phoneWidth]: { fontSize: 10 } }}>{line.text}</Box>
+					</Box>
+				</Box>
+			))}
+		</Box>
+	</>
+);
+
+const TourCursor = ({ name, color, left, top }: { name: string; color: string; left: string; top: string }): React.JSX.Element => (
+	<Box sx={{ position: 'absolute', left, top, display: 'flex', alignItems: 'flex-start' }}>
+		<Box component='svg' viewBox='0 0 16 16' sx={{ width: 16, height: 16, fill: color }}>
+			<path d='M2 1 L14 8 L8.5 9.5 L6 15 Z' />
+		</Box>
+		<Box sx={{ mt: '12px', ml: '-2px', px: '6px', py: '2px', borderRadius: '6px', bgcolor: color, color: tour.white, fontSize: 10, fontWeight: 600 }}>{name}</Box>
+	</Box>
+);
+
+const WHITEBOARD_TOOLS = [ DrawRounded, CropSquareRounded, TitleRounded ];
+
+const WhiteboardScene = (): React.JSX.Element => (
+	<Box sx={{ position: 'relative', flex: 1, minWidth: 0, borderRadius: '10px', bgcolor: tour.white, backgroundImage: `radial-gradient(${tour.canvasDot} 1px, transparent 1.4px)`, backgroundSize: '16px 16px', overflow: 'hidden' }}>
+		<Box sx={{ position: 'absolute', top: 10, left: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', p: '4px', borderRadius: '10px', bgcolor: tour.white, border: `1px solid ${tour.line}`, boxShadow: '0 2px 8px rgba(11, 21, 48, 0.10)' }}>
+			{WHITEBOARD_TOOLS.map((Icon, index) => (
+				<Box key={index} sx={{ width: 24, height: 24, borderRadius: '7px', display: 'grid', placeItems: 'center', bgcolor: index === 0 ? tour.blue : 'transparent', color: index === 0 ? tour.white : tour.muted }}>
+					<Icon sx={{ fontSize: 15 }} />
+				</Box>
+			))}
+			{[ tour.pink, tour.purple ].map((color) => <Box key={color} sx={{ width: 12, height: 12, my: '3px', borderRadius: '50%', bgcolor: color }} />)}
+		</Box>
+		<Box component='svg' viewBox='0 0 400 240' preserveAspectRatio='xMidYMid meet' sx={{ position: 'absolute', top: 8, bottom: 8, left: 48, right: 8, width: 'calc(100% - 56px)', height: 'calc(100% - 16px)' }}>
+			<defs>
+				<marker id='ft-arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'>
+					<path d='M0 0 L10 5 L0 10 z' fill={tour.ink} />
+				</marker>
+			</defs>
+			{[ [ 40, 'Client' ], [ 264, 'Server' ] ].map(([ x, label ]) => (
+				<g key={label}>
+					<rect x={x} y={14} width={96} height={34} rx={8} fill={tour.soft} stroke={tour.ink} strokeWidth={2} />
+					<text x={Number(x) + 48} y={36} textAnchor='middle' fontSize={14} fontWeight={700} fill={tour.ink}>{label}</text>
+					<line x1={Number(x) + 48} y1={48} x2={Number(x) + 48} y2={230} stroke={tour.canvasDot} strokeWidth={2} strokeDasharray='4 4' />
+				</g>
+			))}
+			{[ [ 88, 74, 310, 102, 'SYN' ], [ 312, 124, 90, 152, 'SYN-ACK' ], [ 88, 174, 310, 202, 'ACK' ] ].map(([ x1, y1, x2, y2, label ]) => (
+				<g key={label}>
+					<line x1={x1} y1={y1} x2={x2} y2={y2} stroke={tour.ink} strokeWidth={2} markerEnd='url(#ft-arrow)' />
+					<text x={200} y={((Number(y1) + Number(y2)) / 2) - 8} textAnchor='middle' fontSize={12} fontWeight={700} fill={tour.ink}>{label}</text>
+				</g>
+			))}
+			<path d='M146 128 C 146 108, 256 106, 258 126 C 260 146, 158 150, 140 132' fill='none' stroke={tour.pink} strokeWidth={3} strokeLinecap='round' />
+			<path d='M330 198 l 9 11 l 20 -26' fill='none' stroke={tour.purple} strokeWidth={3} strokeLinecap='round' strokeLinejoin='round' />
+		</Box>
+		<TourCursor name='Sadia' color={tour.pink} left='64%' top='52%' />
+		<TourCursor name='Rahim' color={tour.purple} left='76%' top='80%' />
+	</Box>
+);
+
+const BreakoutScene = (): React.JSX.Element => (
+	<Box sx={{ flex: 1, minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+		{BREAKOUT_ROOMS.map((room) => (
+			<Box key={room.name} sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: '12px', borderRadius: '10px', bgcolor: tour.panel, border: `1px solid ${tour.windowLine}`, [phoneWidth]: { p: '8px' } }}>
+				<Box sx={{ minWidth: 0 }}>
+					<Box sx={{ fontSize: 12, fontWeight: 700, color: tour.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', [phoneWidth]: { fontSize: 11 } }}>{room.name}</Box>
+					<Box sx={{ mt: '2px', fontSize: 10, color: tour.windowText }}>{room.people.length} people</Box>
+				</Box>
+				<Box sx={{ display: 'flex' }}>
+					{room.people.slice(0, 3).map((initials, index) => (
+						<Box key={initials} sx={{ width: 28, height: 28, ml: index ? '-8px' : 0, borderRadius: '50%', border: `2px solid ${tour.panel}`, bgcolor: tour[AVATAR_COLORS[index]], color: tour.white, display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700, [phoneWidth]: { width: 24, height: 24, fontSize: 9 } }}>
+							{initials}
+						</Box>
+					))}
+					{room.people.length > 3 && (
+						<Box sx={{ width: 28, height: 28, ml: '-8px', borderRadius: '50%', border: `2px solid ${tour.panel}`, bgcolor: tour.control, color: tour.windowText, display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700, [phoneWidth]: { width: 24, height: 24, fontSize: 9 } }}>
+							+{room.people.length - 3}
+						</Box>
+					)}
+				</Box>
+			</Box>
+		))}
+	</Box>
+);
+
+const chatBubbleSx = (own?: boolean): SxProps<Theme> => ({
+	alignSelf: own ? 'flex-end' : 'flex-start',
+	maxWidth: '72%',
+	px: '10px',
+	py: '7px',
+	borderRadius: own ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+	bgcolor: own ? tour.blue : tour.control,
+	color: tour.white,
+	fontSize: 12,
+	lineHeight: 1.4,
+	[phoneWidth]: { fontSize: 11 },
+});
+
+const ChatScene = (): React.JSX.Element => (
+	<Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+		<Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '8px', overflow: 'hidden' }}>
+			{TOUR_CHAT.map((message) => (
+				<Box key={message.text} sx={chatBubbleSx(message.own)}>
+					{message.name && <Box sx={{ fontSize: 10, fontWeight: 600, color: tour.windowText }}>{message.name}</Box>}
+					{message.text}
+				</Box>
+			))}
+			<Box sx={{ alignSelf: 'flex-end', maxWidth: '100%', display: 'flex', alignItems: 'center', gap: '10px', p: '8px 10px', borderRadius: '12px', bgcolor: tour.panel, border: `1px solid ${tour.windowLine}` }}>
+				<Box sx={{ width: 30, height: 30, flexShrink: 0, borderRadius: '7px', bgcolor: tour.red, color: tour.white, display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 800 }}>PDF</Box>
+				<Box sx={{ minWidth: 0 }}>
+					<Box sx={{ fontSize: 12, fontWeight: 600, color: tour.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Lecture-12-slides.pdf</Box>
+					<Box sx={{ fontSize: 10, color: tour.windowText }}>2.4 MB</Box>
+				</Box>
+				<DownloadRounded sx={{ fontSize: 18, color: tour.windowText }} />
+			</Box>
+			<Box sx={{ ...chatBubbleSx(), [phoneWidth]: { display: 'none' } } as SxProps<Theme>}>
+				<Box sx={{ fontSize: 10, fontWeight: 600, color: tour.windowText }}>Rahim</Box>
+				Thanks, got it!
+			</Box>
+		</Box>
+		<Box sx={{ flexShrink: 0, height: 36, display: 'flex', alignItems: 'center', gap: 1, pl: '14px', pr: '5px', borderRadius: radius.pill, bgcolor: tour.panel, border: `1px solid ${tour.windowLine}` }}>
+			<Box sx={{ flex: 1, minWidth: 0, fontSize: 12, color: tour.windowText, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Message the class…</Box>
+			<Box sx={{ width: 26, height: 26, borderRadius: '50%', bgcolor: tour.blue, color: tour.white, display: 'grid', placeItems: 'center' }}>
+				<SendRounded sx={{ fontSize: 14 }} />
+			</Box>
+		</Box>
+	</Box>
+);
+
+const TOUR_SCENES: Record<FeatureKey, { title: string; status?: TourStatus; cards?: TourCard[]; Body: () => React.JSX.Element }> = {
+	classes: {
+		title: 'CSE 341 · Computer Networks',
+		Body: ClassesScene,
+		cards: [
+			{ icon: BarChartRounded, color: 'blue', title: 'Poll closed', subtitle: '82% answered', corner: 'tr' },
+			{ icon: PanToolRounded, color: 'amber', title: '3 hands raised', subtitle: 'Nadia, Rahim and Sadia', corner: 'bl' },
+		],
+	},
+	meetings: {
+		title: 'Faculty meeting',
+		Body: MeetingsScene,
+		cards: [ { icon: GroupsRounded, color: 'blue', title: '12 in meeting', subtitle: 'Started 09:30', corner: 'bl' } ],
+	},
+	webinars: {
+		title: 'Open day 2026',
+		status: { text: 'LIVE', color: 'red', solid: true },
+		Body: WebinarsScene,
+		cards: [ { icon: PodcastsRounded, color: 'purple', title: '1,240 attendees', subtitle: 'Up to 10,000', corner: 'bl' } ],
+	},
+	recording: {
+		title: 'Lecture 12 · Recording',
+		Body: RecordingScene,
+		cards: [ { icon: FiberManualRecordRounded, color: 'red', title: 'Auto-recorded', subtitle: 'Every session, in HD', corner: 'tr' } ],
+	},
+	transcription: {
+		title: 'CSE 341 · Live captions',
+		Body: TranscriptionScene,
+		cards: [ { icon: TranslateRounded, color: 'green', title: 'English · বাংলা', subtitle: 'Searchable notes', corner: 'bl' } ],
+	},
+	whiteboard: {
+		title: 'Whiteboard · TCP handshake',
+		status: { text: '3 editing', color: 'green' },
+		Body: WhiteboardScene,
+	},
+	breakout: {
+		title: 'Breakout rooms',
+		status: { text: '08:42 left', color: 'amber' },
+		Body: BreakoutScene,
+	},
+	chat: {
+		title: 'CSE 341 · Chat',
+		Body: ChatScene,
+	},
+};
+
+// One scene on the stage; all of them share a grid cell and crossfade.
+const TourScene = ({ feature, active }: { feature: Feature; active: boolean }): React.JSX.Element => {
+	const { title, status, cards, Body } = TOUR_SCENES[feature.key];
 
 	return (
-		<SectionShell id='products' background={brand.white}>
-			<SectionHeader id='products' eyebrow={strings.productChips.eyebrow} title={strings.productChips.title} />
-			<Box
-				role='tablist'
-				aria-label={strings.productChips.label}
-				sx={{
-					display: 'flex',
-					flexWrap: { xs: 'nowrap', lg: 'wrap' },
-					gap: 1.25,
-					overflowX: { xs: 'auto', lg: 'visible' },
-					scrollSnapType: 'x mandatory',
-					mx: { xs: -2, sm: -3, lg: 0 },
-					px: { xs: 2, sm: 3, lg: 0 },
-					py: 0.75,
-					// A right-edge fade hints that more chips scroll in (§7.3).
-					maskImage: { xs: 'linear-gradient(to right, #000 85%, transparent)', lg: 'none' },
-					scrollbarWidth: 'none',
-					'&::-webkit-scrollbar': { display: 'none' },
-				}}
-			>
-				{chips.map(({ key, label, icon: Icon }) => {
-					const active = key === selected;
+		<Box
+			role={active ? 'img' : undefined}
+			aria-label={active ? feature.label : undefined}
+			aria-hidden={active ? undefined : true}
+			sx={{
+				gridArea: '1 / 1',
+				position: 'relative',
+				opacity: active ? 1 : 0,
+				transform: active ? 'none' : 'translateY(16px) scale(.98)',
+				visibility: active ? 'visible' : 'hidden',
+				// Hidden only after the fade-out, so the outgoing scene stays visible while it fades.
+				transition: `opacity 450ms ease, transform 450ms ease, visibility 0s linear ${active ? 0 : 450}ms`,
+				[reducedMotion]: { transition: 'none' },
+			}}
+		>
+			<AppWindow title={title} status={status}><Body /></AppWindow>
+			{cards?.map((card) => <FloatCard key={card.title} card={card} />)}
+		</Box>
+	);
+};
 
-					return (
-						<Box
-							key={key}
-							component='button'
-							type='button'
-							role='tab'
-							id={`ek-chip-${key}`}
-							aria-selected={active}
-							aria-controls='ek-chip-panel'
-							tabIndex={active ? 0 : -1}
-							onClick={() => setSelected(key)}
-							onKeyDown={(event: React.KeyboardEvent) => rovingKeyDown(event, chips.map((item) => item.key), selected, setSelected, 'ek-chip')}
-							sx={{
-								flexShrink: 0,
-								scrollSnapAlign: 'start',
-								display: 'inline-flex',
-								alignItems: 'center',
-								gap: 1,
-								height: 44,
-								px: 2,
-								borderRadius: radius.pill,
-								border: `1px solid ${active ? brand.navy : brand.border}`,
-								bgcolor: active ? brand.navy : brand.white,
-								color: active ? brand.white : brand.navy,
-								font: 'inherit',
-								fontSize: 15,
-								fontWeight: 500,
-								cursor: 'pointer',
-								transition: `background-color ${motion.base}ms ${motion.ease}, color ${motion.base}ms`,
-								'&:hover': { bgcolor: active ? brand.navy : brand.blueLight },
-								...focusRing(),
-							} as SxProps<Theme>}
-						>
-							<Icon aria-hidden sx={{ fontSize: 22 }} />
-							{label}
+const tourButtonSx: SxProps<Theme> = {
+	height: 48,
+	minHeight: 48,
+	px: '24px',
+	borderRadius: radius.pill,
+	fontFamily: 'inherit',
+	fontSize: 15,
+	fontWeight: 600,
+	boxShadow: 'none',
+	transition: `background-color ${motion.fast}ms ${motion.ease}, color ${motion.fast}ms ${motion.ease}`,
+	...focusRing(),
+};
+
+const FeatureTour = ({ transcriptionEnabled, onStart }: { transcriptionEnabled: boolean; onStart: () => void }): React.JSX.Element => {
+	const features = FEATURES.filter((feature) => transcriptionEnabled || feature.key !== 'transcription');
+	const [ active, setActive ] = useState(0);
+	// Bumped on every pick, so picking the active feature again restarts its timer.
+	const [ pickCount, setPickCount ] = useState(0);
+	const [ hovered, setHovered ] = useState(false);
+	const [ keyboardInside, setKeyboardInside ] = useState(false);
+	const reduceMotion = useMediaQuery(reducedMotion);
+	// Pausing for keyboard focus too lets keyboard users read at their own pace (WCAG 2.2.2).
+	const paused = hovered || keyboardInside;
+
+	useNewsFonts();
+
+	const select = (index: number): void => {
+		setActive(index);
+		setPickCount((value) => value + 1);
+	};
+
+	const onTabKeyDown = (event: React.KeyboardEvent, index: number): void => {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			select(index);
+
+			return;
+		}
+
+		const next = {
+			ArrowDown: (index + 1) % features.length,
+			ArrowUp: (index - 1 + features.length) % features.length,
+			Home: 0,
+			End: features.length - 1,
+		}[event.key];
+
+		if (next === undefined) return;
+
+		event.preventDefault();
+		select(next);
+		document.getElementById(`ft-tab-${features[next].key}`)?.focus();
+	};
+
+	return (
+		<Box
+			component='section'
+			id='products'
+			aria-labelledby='products-title'
+			onPointerEnter={(event: React.PointerEvent) => setHovered(event.pointerType === 'mouse')}
+			onPointerLeave={() => setHovered(false)}
+			onFocus={(event: React.FocusEvent) => setKeyboardInside((event.target as HTMLElement).matches(':focus-visible'))}
+			onBlur={(event: React.FocusEvent) => {
+				if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setKeyboardInside(false);
+			}}
+			sx={{ bgcolor: tour.white, color: tour.ink, fontFamily: newsSans, py: '96px', px: '24px', scrollMarginTop: layout.navH, [phoneWidth]: { py: '64px', px: '16px' } }}
+		>
+			<Box sx={{ maxWidth: 1240, mx: 'auto' }}>
+				<Box data-reveal sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', lg: 'flex-end' }, gap: { xs: '20px', lg: '48px' }, mb: '56px', [phoneWidth]: { mb: '40px' } }}>
+					<Box sx={{ maxWidth: 720 }}>
+						<Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '8px', mb: '16px', fontSize: 14, fontWeight: 600, color: tour.blue, '&::before': { content: '""', width: 8, height: 8, borderRadius: '50%', bgcolor: tour.blue } }}>
+							{strings.features.eyebrow}
 						</Box>
-					);
-				})}
-			</Box>
-
-			<Box
-				role='tabpanel'
-				id='ek-chip-panel'
-				aria-labelledby={`ek-chip-${chip.key}`}
-				key={chip.key}
-				sx={{
-					mt: { xs: 3, md: 4 },
-					display: 'grid',
-					gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 7fr) minmax(0, 5fr)' },
-					gap: { xs: 3, lg: 6 },
-					alignItems: 'center',
-					animation: `${panelIn} ${motion.base}ms ${motion.ease}`,
-					[reducedMotion]: { animation: 'none' },
-				}}
-			>
-				<Box sx={{ maxWidth: { md: 640, lg: 'none' }, width: '100%', mx: { md: 'auto', lg: 0 } }}>
-					<BrowserFrame url={`${window.location.host}/Video-Conferencing`} label={chip.mockLabel} elevation={2}>
-						<ProductMock variant={chip.key} />
-					</BrowserFrame>
-				</Box>
-				<Box sx={{ minHeight: { lg: 240 } }}>
-					<Typography variant='h3' component='h3'>{chip.title}</Typography>
-					<Typography sx={{ mt: 1.5, color: brand.textSecondary }}>{chip.text}</Typography>
-					<Box component='ul' sx={{ listStyle: 'none', m: 0, mt: 2.5, p: 0, display: 'grid', gap: 1.25 }}>
-						{chip.bullets.map((bullet) => <CheckItem key={bullet}>{bullet}</CheckItem>)}
+						<Box component='h2' id='products-title' sx={{ m: 0, fontSize: 'clamp(34px, 4.6vw, 56px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.035em' }}>
+							{strings.features.titleStart}
+							<Box component='span' sx={{ color: tour.blue }}>{strings.features.titleHighlight}</Box>
+						</Box>
 					</Box>
-					{chip.href && <Box sx={{ mt: 3 }}><ArrowLink href={chip.href}>{strings.productChips.learnMore}</ArrowLink></Box>}
+					<Box component='p' sx={{ m: 0, maxWidth: 380, fontSize: 18, lineHeight: 1.6, color: tour.body }}>{strings.features.intro}</Box>
+				</Box>
+
+				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: '400px minmax(0, 1fr)' }, gap: { xs: '40px', lg: '56px' }, alignItems: 'start' }}>
+					<Box>
+						{/* The tabs and their panels interleave, so the tablist owns its tabs through aria-owns. */}
+						<Box role='tablist' aria-label={strings.features.label} aria-orientation='vertical' aria-owns={features.map((feature) => `ft-tab-${feature.key}`).join(' ')} />
+						{features.map((feature, index) => {
+							const isActive = index === active;
+							const Icon = feature.icon;
+
+							return (
+								<Box key={feature.key} sx={{ position: 'relative', p: '20px 0 20px 24px', borderTop: `1px solid ${tour.line}`, '&:last-of-type': { borderBottom: `1px solid ${tour.line}` } }}>
+									{isActive && (
+										<Box aria-hidden sx={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 3, bgcolor: tour.line, overflow: 'hidden' }}>
+											<Box
+												key={pickCount}
+												onAnimationEnd={() => !reduceMotion && setActive((current) => (current + 1) % features.length)}
+												sx={{
+													height: '100%',
+													bgcolor: tour.blue,
+													transformOrigin: 'top',
+													animation: `${tourFill} ${TOUR_CYCLE_MS}ms linear forwards`,
+													animationPlayState: paused ? 'paused' : 'running',
+													[reducedMotion]: { animation: 'none' },
+												}}
+											/>
+										</Box>
+									)}
+									<Box
+										role='tab'
+										id={`ft-tab-${feature.key}`}
+										tabIndex={0}
+										aria-selected={isActive}
+										aria-controls={`ft-panel-${feature.key}`}
+										onClick={() => select(index)}
+										onKeyDown={(event: React.KeyboardEvent) => onTabKeyDown(event, index)}
+										sx={{
+											display: 'flex',
+											alignItems: 'center',
+											gap: '14px',
+											cursor: 'pointer',
+											borderRadius: radius.sm,
+											'&:hover .ft-title': { color: tour.ink },
+											'&:focus-visible': { outline: `3px solid ${tour.blue}`, outlineOffset: '4px' },
+										}}
+									>
+										<Box sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '12px', display: 'grid', placeItems: 'center', bgcolor: isActive ? tour.blue : tour.soft, color: isActive ? tour.white : tour.muted, transition: `background-color ${motion.base}ms, color ${motion.base}ms` }}>
+											<Icon aria-hidden sx={{ fontSize: 22 }} />
+										</Box>
+										<Box component='span' className='ft-title' sx={{ fontSize: 18, fontWeight: 600, color: isActive ? tour.ink : tour.muted, transition: `color ${motion.base}ms` }}>
+											{feature.title}
+										</Box>
+									</Box>
+									<Box
+										role='tabpanel'
+										id={`ft-panel-${feature.key}`}
+										aria-labelledby={`ft-tab-${feature.key}`}
+										inert={!isActive}
+										sx={{ display: 'grid', gridTemplateRows: isActive ? '1fr' : '0fr', transition: 'grid-template-rows 350ms ease', [reducedMotion]: { transition: 'none' } }}
+									>
+										<Box sx={{ minHeight: 0, overflow: 'hidden' }}>
+											<Box sx={{ pl: '54px', pt: '12px' }}>
+												<Box component='p' sx={{ m: 0, fontSize: 15, lineHeight: 1.65, color: tour.body }}>{feature.description}</Box>
+												{feature.link && (
+													<Link
+														href={feature.link}
+														underline='none'
+														sx={{ mt: '10px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: tour.blue, transition: `gap ${motion.base}ms ${motion.ease}`, '&:hover': { gap: '10px' }, [reducedMotion]: { transition: 'none' }, ...focusRing() }}
+													>
+														{strings.features.learnMore}
+														<Box component='span' sx={visuallyHidden}>{` ${strings.features.learnMoreAbout} ${feature.title}`}</Box>
+														<span aria-hidden>→</span>
+													</Link>
+												)}
+											</Box>
+										</Box>
+									</Box>
+								</Box>
+							);
+						})}
+						<Box sx={{ mt: '32px', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+							<Button
+								variant='contained'
+								disableElevation
+								onClick={onStart}
+								onMouseEnter={prefetchApp}
+								sx={{ ...tourButtonSx, bgcolor: tour.blue, color: tour.white, '&:hover': { bgcolor: tour.blueHover } } as SxProps<Theme>}
+							>
+								{strings.features.start}
+							</Button>
+							<Button
+								variant='outlined'
+								href={CONTACT_URL || BDREN_URL}
+								sx={{ ...tourButtonSx, border: `1.5px solid ${tour.ink}`, color: tour.ink, '&:hover': { border: `1.5px solid ${tour.ink}`, bgcolor: tour.ink, color: tour.white } } as SxProps<Theme>}
+							>
+								{strings.features.demo}
+							</Button>
+						</Box>
+					</Box>
+
+					<Box
+						sx={{
+							order: { xs: -1, lg: 0 },
+							position: { lg: 'sticky' },
+							top: { lg: 88 },
+							display: 'grid',
+							placeItems: 'center',
+							minHeight: 560,
+							p: '48px 40px',
+							borderRadius: '28px',
+							overflow: 'hidden',
+							background: tour.stage,
+							isolation: 'isolate',
+							// Dot grid that fades out toward the bottom.
+							'&::before': {
+								content: '""',
+								position: 'absolute',
+								inset: 0,
+								zIndex: -1,
+								backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.5px)',
+								backgroundSize: '22px 22px',
+								maskImage: 'linear-gradient(to bottom, #000 0%, transparent 85%)',
+								pointerEvents: 'none',
+							},
+							[phoneWidth]: { minHeight: 420, p: '24px 16px', borderRadius: '20px' },
+						}}
+					>
+						<Box sx={{ width: '100%', maxWidth: 640, display: 'grid' }}>
+							{features.map((feature, index) => <TourScene key={feature.key} feature={feature} active={index === active} />)}
+						</Box>
+					</Box>
 				</Box>
 			</Box>
-		</SectionShell>
+		</Box>
 	);
 };
 
@@ -2682,7 +3850,7 @@ const UseCases = ({ onStart, onJoin }: { onStart: () => void; onJoin: () => void
 // "Making news, making impact" bento grid (§7.9). One gradient surface per card,
 // the whole card is one link, tall cards carry an illustration that bleeds to the
 // bottom edge. Colors are CSS variables on the section so the theme is easy to change.
-const NEWS_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500&display=swap';
+const NEWS_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700;800&display=swap';
 const newsSerif = '"Fraunces", Georgia, "Times New Roman", serif';
 const newsSans = '"Inter", Roboto, system-ui, -apple-system, "Segoe UI", sans-serif';
 
@@ -2933,7 +4101,7 @@ const HomePage = (): React.JSX.Element | null => {
 	const [ installEvent, setInstallEvent ] = useState<BeforeInstallPromptEvent | null>(null);
 	const [ atTop, setAtTop ] = useState(true);
 	const [ heroCtasVisible, setHeroCtasVisible ] = useState(true);
-	const [ footerVisible, setFooterVisible ] = useState(false);
+	const [ ctaBandVisible, setCtaBandVisible ] = useState(false);
 	const [ keyboardOpen, setKeyboardOpen ] = useState(false);
 	const [ toast, setToast ] = useState<string | null>(null);
 	const [ rooms, setRooms ] = useState<Room[]>([]);
@@ -2951,7 +4119,6 @@ const HomePage = (): React.JSX.Element | null => {
 
 	const topSentinelRef = useRef<HTMLDivElement>(null);
 	const heroCtasRef = useRef<HTMLDivElement>(null);
-	const footerRef = useRef<HTMLElement>(null);
 
 	const config = {
 		transcriptionEnabled: edumeetConfig.transcriptionEnabled,
@@ -3073,7 +4240,8 @@ const HomePage = (): React.JSX.Element | null => {
 	}, []);
 
 	// Navbar turns solid after 16 px of scroll; the phone sticky bar shows once the
-	// hero CTAs leave the view and hides over the footer. No scroll listeners.
+	// hero CTAs leave the view and hides over the closing CTA band, which has the same
+	// buttons. No scroll listeners.
 	useEffect(() => {
 		if (localeInProgress) return;
 
@@ -3089,7 +4257,7 @@ const HomePage = (): React.JSX.Element | null => {
 		const observers = [
 			watch(topSentinelRef.current, setAtTop),
 			watch(heroCtasRef.current, setHeroCtasVisible),
-			watch(footerRef.current, setFooterVisible),
+			watch(document.getElementById('cta'), setCtaBandVisible),
 		];
 
 		return () => observers.forEach((observer) => observer?.disconnect());
@@ -3229,7 +4397,8 @@ const HomePage = (): React.JSX.Element | null => {
 				<Box component='header' sx={{ display: 'contents' }}>
 					<UtilityBar />
 					<Navbar
-						solid={!atTop}
+						solid
+						raised={!atTop}
 						meetItems={meetItems}
 						showSignIn={loginEnabled}
 						loggedIn={loggedIn}
@@ -3256,6 +4425,7 @@ const HomePage = (): React.JSX.Element | null => {
 				/>
 
 				<Box component='main' id='main' tabIndex={-1} sx={{ outline: 'none' }}>
+					{/* Hero (UpdateHomePageDesignplan.md §4.1): white, under the solid navbar. */}
 					<Box
 						component='section'
 						id='hero'
@@ -3263,114 +4433,51 @@ const HomePage = (): React.JSX.Element | null => {
 						sx={{
 							position: 'relative',
 							overflow: 'hidden',
-							background: brand.heroGradient,
-							color: brand.white,
+							bgcolor: brand.white,
+							color: brand.navy,
 							display: 'flex',
 							alignItems: 'center',
-							// The transparent navbar sits on top of the hero, so the hero starts under it.
-							mt: { xs: '-56px', md: '-64px' },
-							pt: { xs: '96px', md: '128px', lg: '112px' },
+							pt: { xs: 5, md: 8, lg: 6 },
 							pb: { xs: 6, md: 8, lg: 6 },
 							// At 1366 × 768 the utility bar, navbar and the whole hero fit (§5.3).
-							minHeight: { lg: 'min(calc(100svh - 36px), 784px)' },
-							'@media (max-height: 800px) and (min-width: 1024px)': { pt: '96px', pb: 4 },
+							minHeight: { lg: 'min(calc(100svh - 100px), 720px)' },
 						}}
 					>
-						<Box aria-hidden sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-							<Box sx={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-							<Box sx={{ position: 'absolute', width: { xs: 260, md: 480 }, height: { xs: 260, md: 480 }, top: { xs: -110, md: -160 }, right: { xs: -100, md: -120 }, borderRadius: '50%', bgcolor: brand.blue, opacity: 0.25, filter: 'blur(80px)' }} />
-							<Box sx={{ position: 'absolute', width: 360, height: 360, bottom: -160, left: -120, borderRadius: '50%', bgcolor: brand.orange, opacity: 0.15, filter: 'blur(80px)', display: { xs: 'none', md: 'block' } }} />
-						</Box>
-
 						<Container maxWidth={false} sx={{ position: 'relative', maxWidth: layout.container, px: layout.gutter }}>
-							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'repeat(12, minmax(0, 1fr))' }, columnGap: 3, rowGap: { xs: 5, md: 6 }, alignItems: 'center' }}>
-								<Box sx={{ gridColumn: { lg: '1 / span 6' }, textAlign: { md: 'center', lg: 'left' }, maxWidth: { md: 720, lg: 'none' }, mx: { md: 'auto', lg: 0 } }}>
-									<Typography sx={{ color: brand.blueOnNavy, fontWeight: 500, mb: 2 }}>{strings.hero.eyebrow}</Typography>
-									<Typography variant='h1' id='hero-title'>{strings.hero.title}</Typography>
-									<Box aria-hidden sx={{ width: 56, height: 4, borderRadius: radius.pill, bgcolor: brand.orange, my: 3, mx: { md: 'auto', lg: 0 } }} />
-									<Typography
-										sx={{
-											fontSize: '1.125rem',
-											color: brand.textOnDarkMuted,
-											maxWidth: 560,
-											mx: { md: 'auto', lg: 0 },
-											display: '-webkit-box',
-											WebkitBoxOrient: 'vertical',
-											WebkitLineClamp: { xs: 3, md: 'none' },
-											overflow: { xs: 'hidden', md: 'visible' },
-										}}
-									>
+							<Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1.05fr)' }, columnGap: 8, rowGap: { xs: 5, md: 7 }, alignItems: 'center' }}>
+								<Box sx={{ width: '100%', maxWidth: { md: 640, lg: 'none' }, mx: { md: 'auto', lg: 0 } }}>
+									<Typography sx={{ color: brand.blueDark, fontSize: 15, fontWeight: 500, mb: 2 }}>{strings.hero.eyebrow}</Typography>
+									<Typography variant='h1' id='hero-title' sx={{ color: brand.navy, letterSpacing: '-0.02em', lineHeight: 1.08 }}>{strings.hero.title}</Typography>
+									<Box aria-hidden sx={{ width: 56, height: 4, borderRadius: radius.pill, bgcolor: brand.orange, my: 3 }} />
+									<Typography sx={{ fontSize: { xs: '1.0625rem', md: '1.1875rem' }, lineHeight: 1.55, color: brand.textSecondary, maxWidth: 540 }}>
 										{strings.hero.subtitle}
 									</Typography>
-									<Box
-										ref={heroCtasRef}
-										sx={{ mt: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', gap: 2, alignItems: { xs: 'stretch', sm: 'center' }, justifyContent: { md: 'center', lg: 'flex-start' } }}
-									>
-										<Button
-											variant='contained'
-											color='secondary'
-											size='large'
-											endIcon={<ArrowForwardRounded />}
-											onClick={startClass}
-											onMouseEnter={prefetchApp}
-											onFocus={prefetchApp}
-											sx={{ boxShadow: shadow[2], '&:hover': { bgcolor: brand.orangeDark }, ...focusRing(true) }}
-										>
-											{strings.common.start}
-										</Button>
-										<Button
-											variant='outlined'
-											size='large'
-											onClick={() => openQuickJoin('join')}
-											sx={{ color: brand.white, borderColor: 'rgba(255, 255, 255, 0.6)', '&:hover': { borderColor: brand.white, bgcolor: 'rgba(255, 255, 255, 0.08)' }, ...focusRing(true) }}
-										>
-											{strings.common.join}
-										</Button>
-									</Box>
+									<HeroActions ctasRef={heroCtasRef} onStart={startClass} onOpenJoin={() => openQuickJoin('join')} />
 									{TOUR_URL && (
-										<Link href={TOUR_URL} sx={{ mt: 2.5, display: 'inline-flex', alignItems: 'center', gap: 0.75, color: brand.blueOnNavy, fontWeight: 500, ...focusRing(true) }}>
+										<Link href={TOUR_URL} sx={{ mt: 2, display: 'inline-flex', alignItems: 'center', gap: 0.75, color: brand.blueDark, fontWeight: 500, ...focusRing() }}>
 											<PlayCircleOutlineRounded aria-hidden sx={{ fontSize: 20 }} />
 											{strings.hero.tour}
 										</Link>
 									)}
 								</Box>
 
-								<Box sx={{ gridColumn: { lg: '7 / span 6' }, position: 'relative', width: '100%', maxWidth: { md: 560, lg: 620 }, mx: { md: 'auto', lg: 0 }, justifySelf: { lg: 'end' } }}>
-									<Box aria-hidden sx={{ position: 'absolute', inset: '10%', borderRadius: '50%', bgcolor: brand.blue, opacity: 0.3, filter: 'blur(80px)' }} />
-									<Box sx={{ position: 'relative' }}>
-										<HeroMock url={`${window.location.host}/Video-Conferencing`} />
-									</Box>
-									<FloatingChip sx={{ top: -18, right: 32 }}>
-										<GroupsRounded sx={{ fontSize: 18, color: brand.blueDark }} />
-										{strings.quickJoin.inClass}
-									</FloatingChip>
-									<FloatingChip sx={{ bottom: 32, left: -16 }}>
-										<Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#d93b3b' }} />
-										REC 00:42:10
-									</FloatingChip>
+								<Box sx={{ width: '100%', maxWidth: { md: 600, lg: 'none' }, mx: { md: 'auto', lg: 0 } }}>
+									<HeroScenes captions={config.transcriptionEnabled} />
 								</Box>
 							</Box>
 						</Container>
 					</Box>
 
 					<TrustedBy />
-					<ProductChips transcriptionEnabled={config.transcriptionEnabled} />
+					<HowItWorks onStart={startClass} />
+					<FeatureTour transcriptionEnabled={config.transcriptionEnabled} onStart={startClass} />
 					<Spotlight transcriptionEnabled={config.transcriptionEnabled} />
 					<UseCases onStart={startClass} onJoin={() => openQuickJoin('join')} />
 					<News />
 					<CtaBand onStart={startClass} onJoin={() => openQuickJoin('join')} />
 				</Box>
 
-				<Footer
-					footerRef={footerRef}
-					imprintUrl={config.imprintUrl}
-					privacyUrl={config.privacyUrl}
-					info={config.info}
-					onStart={startClass}
-					onJoin={() => openQuickJoin('join')}
-				/>
-
-				<StickyBar visible={!heroCtasVisible && !footerVisible && !keyboardOpen} onJoin={() => openQuickJoin('join')} onStart={startClass} />
+				<StickyBar visible={!heroCtasVisible && !ctaBandVisible && !keyboardOpen} onJoin={() => openQuickJoin('join')} onStart={startClass} />
 
 				<InstallDialog open={installOpen} onClose={() => setInstallOpen(false)} />
 
