@@ -147,6 +147,44 @@ export const getData = (serviceName: string, extraQuery?: Record<string, unknown
 	return data;
 };
 
+// How many rows a service has, without fetching them ($limit: 0 asks Feathers
+// for the total only). Used by the dashboard cards; failures stay silent.
+export const countData = (serviceName: string, extraQuery?: Record<string, unknown>): AppThunk<Promise<number | undefined>> => async (
+	_dispatch,
+	_getState,
+	{ managementService }
+): Promise<number | undefined> => {
+	try {
+		const res = await (await managementService).service(serviceName).find({ query: { ...extraQuery, $limit: 0 } });
+
+		if (Array.isArray(res)) return res.length;
+		if (res && typeof (res as PaginatedResult).total === 'number') return (res as PaginatedResult).total;
+	} catch {
+		logger.debug('countData() failed [serviceName:%s]', serviceName);
+	}
+
+	return undefined;
+};
+
+// The newest rows of a service (highest ids first), for the Overview's
+// recent activity. Failures stay silent.
+export const latestData = (serviceName: string, limit = 5): AppThunk<Promise<object[]>> => async (
+	_dispatch,
+	_getState,
+	{ managementService }
+): Promise<object[]> => {
+	try {
+		const res = await (await managementService).service(serviceName).find({ query: { $limit: limit, $sort: { id: -1 } } });
+
+		if (Array.isArray(res)) return res.slice(0, limit);
+		if (res && Array.isArray((res as PaginatedResult).data)) return (res as PaginatedResult).data as object[];
+	} catch {
+		logger.debug('latestData() failed [serviceName:%s]', serviceName);
+	}
+
+	return [];
+};
+
 export const getDataByID = (id: string | number, serviceName: string): AppThunk<Promise<object | undefined>> => async (
 	dispatch,
 	_getState,
@@ -391,6 +429,45 @@ export const patchData = (id: number, params: object, serviceName: string): AppT
 	}
 
 	return data;
+};
+
+// Adds and removes a role's permissions (rolePermissions rows) in one go and
+// reports once, so saving ten switches does not fire ten toasts. `remove`
+// holds rolePermissions row ids, `add` holds permission ids. Returns whether
+// every call went through.
+export const syncRolePermissions = (roleId: number, add: number[], remove: number[], notify = true): AppThunk<Promise<boolean>> => async (
+	dispatch,
+	_getState,
+	{ managementService }
+): Promise<boolean> => {
+	logger.debug('syncRolePermissions() [roleId:%s] [add:%s] [remove:%s]', [ roleId, add, remove ]);
+
+	try {
+		const svc = (await managementService).service('rolePermissions');
+
+		await Promise.all([
+			...add.map((permissionId) => svc.create({ roleId, permissionId })),
+			...remove.map((id) => svc.remove(id)),
+		]);
+		if (notify) {
+			dispatch(notificationsActions.enqueueNotification({
+				message: modificationSuccessfulLabel(),
+				options: { variant: 'success' }
+			}));
+		}
+
+		return true;
+	} catch (error) {
+		if (error instanceof Error) {
+			dispatch(notificationsActions.enqueueNotification({
+				message: modificationUnsuccessfulLabel(error.toString()),
+				options: { variant: 'error' }
+			}));
+		}
+		dispatch(handleAuthError(error));
+
+		return false;
+	}
 };
 
 export const getUserData = (): AppThunk<Promise<object | undefined>> => async (

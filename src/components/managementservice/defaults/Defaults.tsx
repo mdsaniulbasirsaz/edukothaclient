@@ -1,649 +1,365 @@
-import Autocomplete from '@mui/material/Autocomplete';
-import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
-// eslint-disable-next-line camelcase
-import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
-import { useMRTLocalization } from '../../../utils/mrtLocalization';
-import { Button, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Grid, Checkbox, InputAdornment, Tooltip } from '@mui/material';
-import React from 'react';
-import { Roles, Tenant, TenantOptionTypes, RoleOptionTypes, DefaultOptionTypes, Default } from '../../../utils/types';
+import { useEffect, useMemo, useState } from 'react';
+import { Box, Button, ButtonBase, IconButton, InputAdornment, MenuItem, Skeleton, Switch, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { Default, Roles, Tenant } from '../../../utils/types';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { createData, deleteData, getData, patchData } from '../../../store/actions/managementActions';
-import { notificationsActions } from '../../../store/slices/notificationsSlice';
-import { addNewLabel, applyLabel, breakoutRoomsServiceLabel, cancelLabel, chatServiceLabel, configurationLockLabel, defaultRoleIdLabel, deleteLabel, disableUnmanagedRoomsLabel, disableUnmanagedRoomsTooltipLabel, endToEndEncryptionLabel, endToEndEncryptionTooltipLabel, filesharingServiceLabel, genericItemDescLabel, liveNumberLimitLabel, localRecordingMgmtLabel, manageItemLabel, managerManagedRoomNumberLimitLabel, maxFileSizedLabel, nameCannotBeEmptyLabel, numberLimitLabel, raiseHandMgmtLabel, reactionsEnabledLabel, roomBackgroundURLLabel, roomLockedMgmtLabel, roomLockedTooltipLabel, roomLogoURLLabel, roomOptionStateLabel, roomTrackerLabel, tenantLabel, trackerHelperTextLabel, unmanagedLabel, userManagedRoomNumberLimitLabel } from '../../translated/translatedComponents';
 import { managamentActions } from '../../../store/slices/managementSlice';
-import { getTenantName } from '../../../utils/management';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import LockIcon from '@mui/icons-material/Lock';
+import { asNumber, focusRing, str, ui } from '../users/userUi';
+import {
+	cancelLabel, defaultSettingsLabel, tenantLabel, trackerHelperTextLabel,
+} from '../../translated/translatedComponents';
+import { EmptyBox, SavedNote, dangerOutlinedSx, fieldProps, monoInput, orangeButtonSx, rowsOf, sameId, switchSx } from '../tenants/tenantShared';
+import { SavedTick, savedButtonSx, useJustSaved } from '../motion';
+
+// Defaults screen (user request 2026-10-17, same look as Tenants): one settings
+// record per tenant, shown as a page instead of a table + dialog. Pick a
+// tenant, then edit Room limits, Rooms made on the fly (the "unmanaged" room
+// switches, each with a super-admin lock) and Room look & files, with one Save.
+// The record, its fields and who may change what are unchanged: the tenant-wide
+// room limits and the locks are super admin only, and a locked switch can only
+// be changed by a super admin.
+
+type Flag = 'disableUnmanaged' | 'endToEndEncryption' | 'locked' | 'raiseHandEnabled' | 'reactionsEnabled' | 'localRecordingEnabled' | 'chatEnabled' | 'breakoutsEnabled' | 'filesharingEnabled';
+
+// value field + lock field of each switch, as stored
+const FLAGS: Array<{ key: Flag; value: string; lock: string; title: string; desc: () => string }> = [
+	{ key: 'disableUnmanaged', value: 'disableUnmanaged', lock: 'disableUnmanagedLock', title: 'Turn off rooms made on the fly', desc: () => 'Only rooms an admin created can be used.' },
+	{ key: 'endToEndEncryption', value: 'endToEndEncryption', lock: 'endToEndEncryptionLock', title: 'End-to-end encryption', desc: () => 'Media is encrypted end to end. Lock it to keep it on in every room.' },
+	{ key: 'locked', value: 'lockedUnmanaged', lock: 'lockedLock', title: 'Start rooms locked', desc: () => 'The first signed-in person gets in; everyone else waits in the lobby.' },
+	{ key: 'raiseHandEnabled', value: 'raiseHandEnabledUnmanaged', lock: 'raiseHandEnabledLock', title: 'Raise hand', desc: () => 'People can raise a hand to ask to speak.' },
+	{ key: 'reactionsEnabled', value: 'reactionsEnabledUnmanaged', lock: 'reactionsEnabledLock', title: 'Reactions', desc: () => 'People can send quick emoji reactions.' },
+	{ key: 'localRecordingEnabled', value: 'localRecordingEnabledUnmanaged', lock: 'localRecordingEnabledLock', title: 'Record on own device', desc: () => 'People can record the meeting on their own computer.' },
+	{ key: 'chatEnabled', value: 'chatEnabledUnmanaged', lock: 'chatEnabledLock', title: 'Chat', desc: () => 'The room has a text chat.' },
+	{ key: 'breakoutsEnabled', value: 'breakoutsEnabledUnmanaged', lock: 'breakoutsEnabledLock', title: 'Breakout rooms', desc: () => 'Moderators can split the meeting into small rooms.' },
+	{ key: 'filesharingEnabled', value: 'filesharingEnabledUnmanaged', lock: 'filesharingEnabledLock', title: 'File sharing', desc: () => 'People can share files in the room.' },
+];
+
+const copy = {
+	subtitle: 'Limits and starting settings for rooms in each tenant.',
+	tenant: tenantLabel,
+	noDefaults: (t: string) => `${t} has no defaults yet. Rooms use the server's settings until you create them.`,
+	create: 'Create defaults',
+	limits: 'Room limits',
+	limitsHelp: 'How many rooms people can have in this tenant.',
+	numberLimit: 'Rooms in the whole tenant',
+	userLimit: 'Rooms one person can own',
+	managerLimit: 'Rooms one manager can own',
+	superOnly: 'Only a super admin can change this.',
+	adhoc: 'Rooms made on the fly',
+	adhocHelp: 'Rooms that people open just by going to a room name, without an admin creating them first ("unmanaged" rooms).',
+	on: 'On',
+	off: 'Off',
+	lock: (t: string) => `Lock "${t}" so tenant admins can't change it`,
+	unlock: (t: string) => `Unlock "${t}"`,
+	lockedBySuper: 'Locked by a super admin',
+	lockHelp: 'A locked switch can only be changed by a super admin.',
+	look: 'Room look & files',
+	lookHelp: 'What new rooms look like, and limits for shared files.',
+	tracker: 'Tracker address',
+	maxFile: 'Largest file people can share',
+	background: 'Background image URL',
+	logo: 'Logo image URL',
+	defaultRole: 'Default role in new rooms',
+	noRole: 'No default role',
+	preview: 'Preview',
+	save: 'Save',
+	saved: 'Saved',
+	foot: 'Nothing changes until you press Save.',
+	deleteDefaults: 'Delete defaults',
+	deleteConfirm: 'Yes, delete',
+	deleteHelp: 'Rooms go back to the server settings.',
+	switchFor: (t: string) => t,
+} as const;
+
+type Form = {
+	numberLimit: number; userManagedRoomNumberLimit: number; managerManagedRoomNumberLimit: number; liveNumberLimit: number;
+	tracker: string; maxFileSize: number; background: string; logo: string; defaultRoleId: number;
+	flags: Record<string, boolean>;
+};
+
+const num = (v: unknown, fallback: number) => {
+	const n = parseInt(String(v ?? ''));
+
+	return Number.isNaN(n) ? fallback : n;
+};
+const formOf = (d: Default): Form => {
+	const raw = d as unknown as Record<string, unknown>;
+	const flags: Record<string, boolean> = {};
+
+	FLAGS.forEach((f) => { flags[f.value] = Boolean(raw[f.value]); flags[f.lock] = Boolean(raw[f.lock]); });
+
+	return {
+		numberLimit: num(d.numberLimit, 100),
+		userManagedRoomNumberLimit: num(d.userManagedRoomNumberLimit, 1000),
+		managerManagedRoomNumberLimit: num(d.managerManagedRoomNumberLimit, 1000),
+		liveNumberLimit: num(d.liveNumberLimit, 1000) || 1000,
+		tracker: str(raw.tracker),
+		maxFileSize: num(raw.maxFileSize, 100),
+		background: str(raw.background),
+		logo: str(raw.logo),
+		defaultRoleId: num(raw.defaultRoleId, 0),
+		flags,
+	};
+};
+const sameForm = (a: Form, b: Form) => JSON.stringify(a) === JSON.stringify(b);
 
 const DefaultTable = () => {
 	const dispatch = useAppDispatch();
-	const localization = useMRTLocalization();
-	const tenants: TenantOptionTypes = useAppSelector((state) => state.management.tenants);
-	const roles: RoleOptionTypes = useAppSelector((state) => state.management.roles);
-
 	const { superAdmin } = useAppSelector((state) => state.management);
+	const tenants: Tenant[] = useAppSelector((state) => state.management.tenants) ?? [];
+	const roles: Roles[] = useAppSelector((state) => state.management.roles) ?? [];
+	const phone = useMediaQuery('(max-width: 599.95px)');
 
-	// should be memoized or stable
-	// eslint-disable-next-line camelcase
-	const columns = useMemo<MRT_ColumnDef<Default>[]>(
-		() => [
+	const [ rows, setRows ] = useState<Default[]>([]);
+	const [ loaded, setLoaded ] = useState(false);
+	const [ tenantId, setTenantId ] = useState<number>(0);
 
-			{
-				accessorKey: 'id',
-				header: '#'
-			},
-			{
-				// the row shows the tenant name, so filtering/sorting/search must
-				// use the name too, not the raw tenantId
-				id: 'tenantId',
-				accessorFn: (row) => getTenantName(tenants, String(row.tenantId)),
-				header: tenantLabel(),
-			}
-		],
-		[ tenants ],
-	);
-
-	const [ data, setData ] = useState<DefaultOptionTypes>([]);
-
-	// MRT caches accessorFn results per row and only rebuilds its rows when the
-	// data array identity changes. The rows and the lookups above are fetched
-	// concurrently, so hand it a fresh array when a lookup resolves after the
-	// rows, otherwise the resolved names stay stuck on their placeholder.
-	const tableData = useMemo(() => [ ...(data ?? []) ], [ data, tenants ]);
-	const [ isLoading, setIsLoading ] = useState(false);
-	const [ id, setId ] = useState(0);
-
-	const [ numberLimit, setNumberLimit ] = useState(0);
-	const [ liveNumberLimit, setLiveNumberLimit ] = useState(0);
-	const [ userManagedRoomNumberLimit, setUserManagedRoomNumberLimit ] = useState(0);
-	const [ managerManagedRoomNumberLimit, setManagerManagedRoomNumberLimit ] = useState(0);
-	const [ disableUnmanaged, setDisableUnmanaged ] = useState(false);
-	const [ disableUnmanagedLock, setDisableUnmanagedLock ] = useState(false);
-	const [ endToEndEncryption, setEndToEndEncryption ] = useState(false);
-	const [ endToEndEncryptionLock, setEndToEndEncryptionLock ] = useState(false);
-	const [ lockedUnmanaged, setLockUnmanaged ] = useState(false);
-	const [ raiseHandEnabledUnmanaged, setRaiseHandEnabledUnmanaged ] = useState(false);
-	const [ reactionsEnabledUnmanaged, setReactionsEnabledUnmanaged ] = useState(false);
-	
-	const [ localRecordingEnabledUnmanaged, setLocalRecordingEnabledUnmanaged ] = useState(false);
-	const [ lockedLock, setLockLock ] = useState(false);
-	const [ raiseHandEnabledLock, setRaiseHandEnabledLock ] = useState(false);
-	const [ reactionsEnabledLock, setReactionsEnabledLock ] = useState(false);
-	const [ localRecordingEnabledLock, setLocalRecordingEnabledLock ] = useState(false);
-	const [ chatEnabledUnmanaged, setChatEnabledUnmanaged ] = useState(false);
-	const [ breakoutsEnabledUnmanaged, setBreakoutsEnabledUnmanaged ] = useState(false);
-	const [ filesharingEnabledUnmanaged, setFilesharingEnabledUnmanaged ] = useState(false);
-	const [ chatEnabledLock, setChatEnabledLock ] = useState(false);
-	const [ breakoutsEnabledLock, setBreakoutsEnabledLock ] = useState(false);
-	const [ filesharingEnabledLock, setFilesharingEnabledLock ] = useState(false);
-	const [ tracker, setTracker ] = useState('');
-	const [ maxFileSize, setMaxFileSize ] = useState(0);
-	const [ background, setBackground ] = useState('');
-	const [ logo, setLogo ] = useState('');
-	const [ defaultRoleId, setDefaultRoleId ] = useState<number|undefined>(0);
-	// const [ tenantPermissionLimitRole, setTenantPermissionLimitRole ] = useState(0);
-	
-	const [ defaultRoleIdOption, setDefaultRoleIdOption ] = useState<Roles | undefined>();
-	// const [ tenantPermissionLimitRoleOption, setTenantPermissionLimitRoleOption ] = useState<Roles | undefined>();
-
-	const [ cantPatch ] = useState(false);
-	const [ cantDelete, setCantDelete ] = useState(false);
-	const [ tenantId, setTenantId ] = useState(0);
-
-	const [ tenantIdOption, setTenantIdOption ] = useState<Tenant | undefined>();
-	const [ tenantIdDisabled, setTenantIdDisabled ] = useState(false);
-	// On add, create only persists tenantId, so every other field is disabled to
-	// avoid tempting the user to fill values that won't be saved (mirrors the
-	// roles dialog, which disables permissions on add for the same reason).
-	const [ fieldsDisabled, setFieldsDisabled ] = useState(false);
-
-	async function fetchProduct() {
-		
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		dispatch(getData('tenants')).then((tdata: any) => {
-			if (tdata != undefined) {
-				dispatch(managamentActions.setTenants(tdata.data));
-			}
-			setIsLoading(false);
-		});
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		dispatch(getData('roles')).then((tdata: any) => {
-			if (tdata != undefined) {
-				dispatch(managamentActions.setRoles(tdata.data));
-			}
-			setIsLoading(false);
-		});
-
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		dispatch(getData('defaults')).then((tdata: any) => {
-			if (tdata != undefined) {
-				setData(tdata.data);
-			}
-			setIsLoading(false);
-    
-		});
-
-	}
+	/* eslint-disable @typescript-eslint/no-explicit-any */
+	const fetchRows = () => dispatch(getData('defaults')).then((t: any) => { if (t != undefined) setRows(rowsOf<Default>(t)); });
 
 	useEffect(() => {
-		// By moving this function inside the effect, we can clearly see the values it uses.
-		setIsLoading(true);
-		fetchProduct();
+		Promise.all([
+			fetchRows(),
+			dispatch(getData('tenants')).then((t: any) => { if (t != undefined) dispatch(managamentActions.setTenants(rowsOf<Tenant>(t))); }),
+			dispatch(getData('roles')).then((t: any) => { if (t != undefined) dispatch(managamentActions.setRoles(rowsOf<Roles>(t))); }),
+		]).finally(() => setLoaded(true));
 	}, []);
+	/* eslint-enable @typescript-eslint/no-explicit-any */
 
-	const [ open, setOpen ] = React.useState(false);
+	// Start on the first tenant once they are in.
+	useEffect(() => {
+		if (!tenantId && tenants.length) setTenantId(asNumber(tenants[0].id));
+	}, [ tenants ]);
 
-	// ADD NEW
-	const handleOpen = () => {
-		setId(0);
+	const record = rows.find((r) => sameId(r.tenantId, tenantId)) ?? null;
+	const tenant = tenants.find((t) => sameId(t.id, tenantId)) ?? null;
 
-		// tenant selectable on add
-		if (tenants.length > 0) {
-			// always align with what Autocomplete shows: first tenant
-			const firstTenant = tenants[0];
-			const firstTenantId = Number(firstTenant.id);
+	const [ form, setForm ] = useState<Form | null>(null);
+	const [ base, setBase ] = useState<Form | null>(null);
+	const [ busy, setBusy ] = useState(false);
+	const [ savedAt, setSavedAt ] = useState(0);
+	const justSaved = useJustSaved(savedAt);
+	const [ confirmDelete, setConfirmDelete ] = useState(false);
 
-			setTenantId(firstTenantId);
-			setTenantIdOption(firstTenant);
-		} else {
-			setTenantId(0);
-			setTenantIdOption(undefined);
-		}
+	useEffect(() => {
+		const f = record ? formOf(record) : null;
 
-		setTenantIdDisabled(false);
-		setFieldsDisabled(true);
-		setCantDelete(true);
+		setForm(f);
+		setBase(f);
+		setSavedAt(0);
+		setConfirmDelete(false);
+	}, [ record?.id, tenantId, loaded ]);
 
-		setNumberLimit(100);
-		setLiveNumberLimit(1000);
-		setUserManagedRoomNumberLimit(1000);
-		setManagerManagedRoomNumberLimit(1000);
-		setLockUnmanaged(false);
-		setRaiseHandEnabledUnmanaged(false);
-		setLocalRecordingEnabledUnmanaged(false);
-		setLockLock(false);
-		setRaiseHandEnabledLock(false);
-		setLocalRecordingEnabledLock(false);
-		setChatEnabledUnmanaged(false);
-		setBreakoutsEnabledUnmanaged(false);
-		setFilesharingEnabledUnmanaged(false);
-		setChatEnabledLock(false);
-		setBreakoutsEnabledLock(false);
-		setFilesharingEnabledLock(false);
-		setTracker('');
-		setMaxFileSize(100);
-		setBackground('');
-		setLogo('');
-		setDefaultRoleId(0);
-		// setTenantPermissionLimitRole(0);
+	const dirty = Boolean(form && base && !sameForm(form, base));
+	const set = (patch: Partial<Form>) => { setForm((f) => (f ? { ...f, ...patch } : f)); setSavedAt(0); };
+	const setFlag = (k: string, v: boolean) => { setForm((f) => (f ? { ...f, flags: { ...f.flags, [k]: v } } : f)); setSavedAt(0); };
 
-		setDefaultRoleIdOption(undefined);
-		// setTenantPermissionLimitRoleOption(undefined);
+	const tenantRoles = useMemo(() => roles.filter((r) => sameId(r.tenantId, tenantId) || (form && sameId(r.id, form.defaultRoleId))), [ roles, tenantId, form?.defaultRoleId ]);
+	const numbersOk = Boolean(form && [ form.numberLimit, form.userManagedRoomNumberLimit, form.managerManagedRoomNumberLimit, form.maxFileSize ].every((n) => Number.isFinite(n) && n >= 0));
+	const canSave = dirty && numbersOk && !busy;
 
-		setOpen(true);
-	};
-	
-	const handleClickOpenNoreset = () => {
-		// get tenantId from clicked element
-		setTenantIdDisabled(false);
-		setFieldsDisabled(false);
-		setCantDelete(false);
-		setOpen(true);
-	};
-
-	const handleTenantIdChange = (event: SyntheticEvent<Element, Event>, newValue: Tenant) => {
-		if (newValue) {
-			if (typeof newValue.id != 'number') {
-				setTenantId(parseInt(newValue.id));
-			} else {
-				setTenantId(newValue.id);
-			}
-			setTenantIdOption(newValue);
+	const create = async () => {
+		if (!tenantId) return;
+		setBusy(true);
+		try {
+			await dispatch(createData({ tenantId }, 'defaults'));
+			await fetchRows();
+		} finally {
+			setBusy(false);
 		}
 	};
+	const save = async () => {
+		if (!form || !record || !canSave) return;
+		setBusy(true);
+		try {
+			await dispatch(patchData(asNumber(record.id), {
+				tenantId,
+				numberLimit: form.numberLimit,
+				liveNumberLimit: form.liveNumberLimit,
+				userManagedRoomNumberLimit: form.userManagedRoomNumberLimit,
+				managerManagedRoomNumberLimit: form.managerManagedRoomNumberLimit,
+				...form.flags,
+				tracker: form.tracker.trim(),
+				maxFileSize: form.maxFileSize,
+				background: form.background.trim(),
+				logo: form.logo.trim(),
+				defaultRoleId: form.defaultRoleId,
+			}, 'defaults'));
+			await fetchRows();
+			setBase(form);
+			setSavedAt(Date.now());
+		} finally {
+			setBusy(false);
+		}
+	};
+	const remove = async () => {
+		if (!record) return;
+		if (!confirmDelete) {
+			setConfirmDelete(true);
 
-	const handleNumberLimit = (event: { target: { value: string; }; }) => {
-		setNumberLimit(parseInt(event.target.value));
-	};
-	const handleLiveNumberLimit = (event: { target: { value: string; }; }) => {
-		setLiveNumberLimit(parseInt(event.target.value));
-	};
-	const handleUserManagedRoomNumberLimit = (event: { target: { value: string; }; }) => {
-		setUserManagedRoomNumberLimit(parseInt(event.target.value));
-	};
-	
-	const handleManagerManagedRoomNumberLimit = (event: { target: { value: string; }; }) => {
-		setManagerManagedRoomNumberLimit(parseInt(event.target.value));
-	};
-
-	const handleTracker = (event: { target: { value: string; }; }) => {
-		setTracker(event.target.value);
-	};
-	
-	const handlemaxFileSize = (event: { target: { value: string; }; }) => {
-		setMaxFileSize(parseInt(event.target.value));
-	};
-	
-	const handleBackgroundChange = (event: { target: { value: string; }; }) => {
-		setBackground(event.target.value);
-	};
-	const handleLogoChange = (event: { target: { value: string; }; }) => {
-		setLogo(event.target.value);
-	};
-
-	const handleDefaultRoleId = (event: SyntheticEvent<Element, Event>, newValue: Roles) => {
-		if (newValue) {
-			if (typeof newValue.id != 'number') {
-				setDefaultRoleId(parseInt(newValue.id));
-			} else {
-				setDefaultRoleId(newValue.id);
-			}
-			
-			// setDefaultRoleIdOption(newValue);
+			return;
+		}
+		setBusy(true);
+		try {
+			await dispatch(deleteData(asNumber(record.id), 'defaults'));
+			await fetchRows();
+		} finally {
+			setBusy(false);
+			setConfirmDelete(false);
 		}
 	};
 
-	/* const handleTenantPermissionLimitRole = (event: SyntheticEvent<Element, Event>, newValue: Roles) => {
-		if (newValue) {
-			if (typeof newValue.id != 'number') {
-				setTenantPermissionLimitRole(parseInt(newValue.id));
-			} else {
-				setTenantPermissionLimitRole(newValue.id);
-			}
-			
-			// setDefaultRoleIdOption(newValue);
-		}
-	}; */
+	// ----- Pieces -----
+	const card = (title: string, help: string, children: React.ReactNode) => (
+		<Box component='section' aria-label={title} sx={{ bgcolor: '#fff', border: `1px solid ${ui.line}`, minWidth: 0 }}>
+			<Box sx={{ px: { xs: 2, sm: 3 }, pt: 2, pb: 1.5, borderBottom: `1px solid ${ui.lineSoft}` }}>
+				<Typography component='h3' sx={{ m: 0, fontSize: 18, lineHeight: '24px', fontWeight: 700, color: ui.navy }}>{title}</Typography>
+				<Typography sx={{ fontSize: 14, lineHeight: '20px', color: ui.muted }}>{help}</Typography>
+			</Box>
+			<Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>{children}</Box>
+		</Box>
+	);
 
-	const handleClose = () => {
-		setOpen(false);
+	const numberField = (k: 'numberLimit' | 'userManagedRoomNumberLimit' | 'managerManagedRoomNumberLimit', label: string, superOnly: boolean) => {
+		const locked = superOnly && !superAdmin;
+
+		return (
+			<TextField
+				label={label}
+				type='number'
+				size='small'
+				value={form ? form[k] : ''}
+				disabled={locked}
+				onChange={(e) => set({ [k]: parseInt(e.target.value) } as Partial<Form>)}
+				error={Boolean(form && !(form[k] >= 0))}
+				helperText={locked ? copy.superOnly : ' '}
+				slotProps={{ htmlInput: { min: 0 }, input: { sx: { borderRadius: 0, bgcolor: '#fff' }, endAdornment: locked ? <InputAdornment position='end'><LockOutlinedIcon sx={{ fontSize: 18, color: ui.slateDot }} /></InputAdornment> : undefined } }}
+			/>
+		);
 	};
 
-	const delTenant = async () => {
+	const flagRow = (f: typeof FLAGS[number]) => {
+		if (!form) return null;
+		const on = form.flags[f.value];
+		const locked = form.flags[f.lock];
+		const blocked = locked && !superAdmin;
 
-		// add new data / mod data / error
-		// eslint-disable-next-line no-alert
-		if (id != 0 && confirm('Are you sure?')) {
-			dispatch(deleteData(id, 'defaults')).then(() => {
-				fetchProduct();
-				setOpen(false);
-			});
-		}
+		return (
+			<Box component='li' key={f.key} sx={{ minHeight: 64, py: 1, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 1.5, borderBottom: `1px solid ${ui.lineSoft}` }}>
+				<Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+					<Box component='span' sx={{ fontSize: 15, lineHeight: '20px', fontWeight: 600, color: ui.navy }}>{f.title}</Box>
+					<Box component='span' sx={{ fontSize: 13, lineHeight: '18px', color: ui.muted }}>{f.desc()}</Box>
+					{blocked && <Box component='span' sx={{ mt: 0.25, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 12, fontWeight: 600, color: ui.slate }}><LockOutlinedIcon sx={{ fontSize: 14 }} />{copy.lockedBySuper}</Box>}
+				</Box>
+				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+					<Box component='span' aria-hidden sx={{ width: 26, textAlign: 'right', fontSize: 13, fontWeight: 600, color: on ? ui.blueDark : ui.muted }}>{on ? copy.on : copy.off}</Box>
+					<Switch checked={on} disabled={blocked} onChange={(_e, v) => setFlag(f.value, v)} slotProps={{ input: { 'aria-label': copy.switchFor(f.title) } }} sx={switchSx} />
+				</Box>
+				{superAdmin ? (
+					<Tooltip title={locked ? copy.unlock(f.title) : copy.lock(f.title)}>
+						<IconButton aria-pressed={locked} aria-label={copy.lock(f.title)} onClick={() => setFlag(f.lock, !locked)} sx={{ width: 40, height: 40, borderRadius: 0, border: `1px solid ${locked ? ui.navy : ui.line}`, bgcolor: locked ? ui.navy : '#fff', color: locked ? '#fff' : ui.slate, '&:hover': { bgcolor: locked ? ui.navy : ui.grey }, '&.Mui-focusVisible': focusRing }}>
+							{locked ? <LockOutlinedIcon sx={{ fontSize: 20 }} /> : <LockOpenOutlinedIcon sx={{ fontSize: 20 }} />}
+						</IconButton>
+					</Tooltip>
+				) : <Box sx={{ width: 0 }} />}
+			</Box>
+		);
 	};
 
-	const addTenant = async () => {
+	const imgPreview = (url: string, wide: boolean) => (url.trim() ? (
+		<Box sx={{ mt: 0.75, width: wide ? 160 : 64, height: wide ? 90 : 64, border: `1px solid ${ui.line}`, bgcolor: ui.grey, backgroundImage: `url("${url.trim().replace(/"/g, '%22')}")`, backgroundSize: wide ? 'cover' : 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }} role='img' aria-label={copy.preview} />
+	) : null);
 
-		// add new data / mod data / error
-		if (id === 0) {
-			dispatch(createData({ 
-				tenantId: tenantId
-			}, 'defaults')).then(() => {
-				fetchProduct();
-				setOpen(false);
-			});
-		} else if (id != 0) {
-			dispatch(patchData(id,
-				{
-					tenantId: tenantId,
-					numberLimit: numberLimit,
-					liveNumberLimit: liveNumberLimit,
-					userManagedRoomNumberLimit: userManagedRoomNumberLimit,
-					managerManagedRoomNumberLimit: managerManagedRoomNumberLimit,
-					disableUnmanaged: disableUnmanaged,
-					disableUnmanagedLock: disableUnmanagedLock,
-					endToEndEncryption: endToEndEncryption,
-					endToEndEncryptionLock: endToEndEncryptionLock,
-					lockedUnmanaged: lockedUnmanaged,
-					raiseHandEnabledUnmanaged: raiseHandEnabledUnmanaged,
-					reactionsEnabledUnmanaged: reactionsEnabledUnmanaged,
-					localRecordingEnabledUnmanaged: localRecordingEnabledUnmanaged,
-					lockedLock: lockedLock,
-					raiseHandEnabledLock: raiseHandEnabledLock,
-					reactionsEnabledLock: reactionsEnabledLock,
-					localRecordingEnabledLock: localRecordingEnabledLock,
-					chatEnabledUnmanaged: chatEnabledUnmanaged,
-					breakoutsEnabledUnmanaged: breakoutsEnabledUnmanaged,
-					filesharingEnabledUnmanaged: filesharingEnabledUnmanaged,
-					chatEnabledLock: chatEnabledLock,
-					breakoutsEnabledLock: breakoutsEnabledLock,
-					filesharingEnabledLock: filesharingEnabledLock,
-					tracker: tracker,
-					maxFileSize: maxFileSize,
-					background: background,
-					logo: logo,
-					defaultRoleId: defaultRoleId,
-					// tenantPermissionLimitRole: tenantPermissionLimitRole
-				}, 'defaults')).then(() => {
-				fetchProduct();
-				setOpen(false);
-			});
-		} else {
-			dispatch(notificationsActions.enqueueNotification({
-				message: nameCannotBeEmptyLabel(),
-				options: { variant: 'warning' }
-			}));
-		}
+	const tenantPicker = tenants.length > 1 && (
+		phone || tenants.length > 6 ? (
+			<TextField select label={copy.tenant()} size='small' value={tenantId || ''} onChange={(e) => setTenantId(asNumber(e.target.value))} sx={{ width: { xs: '100%', sm: 320 } }} {...fieldProps}>
+				{tenants.map((t) => <MenuItem key={t.id} value={asNumber(t.id)}>{t.name}{rows.some((r) => sameId(r.tenantId, t.id)) ? '' : ' · no defaults'}</MenuItem>)}
+			</TextField>
+		) : (
+			<Box role='group' aria-label={copy.tenant()} sx={{ display: 'flex', flexWrap: 'wrap', border: `1px solid ${ui.line}`, bgcolor: '#fff', alignSelf: 'flex-start' }}>
+				{tenants.map((t, i) => {
+					const on = sameId(t.id, tenantId);
+					const has = rows.some((r) => sameId(r.tenantId, t.id));
 
-	};
-	
-	return <>
-		<div>
-			
-			<Button variant="outlined" onClick={() => handleOpen()}>
-				{addNewLabel()}
-			</Button>
-			<hr />
-			<Dialog open={open} onClose={handleClose}>
-				<DialogTitle>{manageItemLabel()}</DialogTitle>
-				<DialogContent>
-					<DialogContentText>
-						{genericItemDescLabel()}
-					</DialogContentText>
-					<input type="hidden" name="id" value={id} />
-					<Grid container spacing={1}>
-						<Grid size={12}>
-							<Autocomplete
-								options={tenants}
-								getOptionLabel={(option) => option.name}
-								fullWidth
-								disableClearable
-								id="combo-box-demo"
-								readOnly={tenantIdDisabled}
-								onChange={handleTenantIdChange}
-								value={tenantIdOption}
-								sx={{ marginTop: '8px' }}
-								renderInput={(params) => <TextField {...params} label={tenantLabel()} />}
-							/>
-						</Grid>
-						<Grid size={12}>
-							<TextField
-								required
-								autoFocus
-								margin="dense"
-								id="numberLimit"
-								label={numberLimitLabel()}
-								type="number"
-								fullWidth
-								disabled={!superAdmin || fieldsDisabled}
-								onChange={handleNumberLimit}
-								value={numberLimit}
-							/>
-						</Grid>
-						<Grid size={0} 
-							sx={{ 
-								visibility: 'hidden', 
-								display: 'none' 
-							}}>
-							<TextField
-								required
-								margin="dense"
-								id="liveNumberLimit"
-								label={liveNumberLimitLabel()}
-								type="number"
-								fullWidth
-								disabled={fieldsDisabled}
-								onChange={handleLiveNumberLimit}
-								value={liveNumberLimit}
-							/>
-						</Grid>
-						<Grid size={12}>
-							<TextField
-								required
-								margin="dense"
-								id="numberLimit"
-								label={userManagedRoomNumberLimitLabel()}
-								type="number"
-								fullWidth
-								disabled={fieldsDisabled}
-								onChange={handleUserManagedRoomNumberLimit}
-								value={userManagedRoomNumberLimit}
-							/>
-						</Grid>
-						
-						<Grid size={12}>
-							<TextField
-								required
-								margin="dense"
-								id="managerManagedRoomNumberLimit"
-								label={managerManagedRoomNumberLimitLabel()}
-								type="number"
-								fullWidth
-								disabled={!superAdmin || fieldsDisabled}
-								onChange={handleManagerManagedRoomNumberLimit}
-								value={managerManagedRoomNumberLimit}
-							/>
-						</Grid>
+					return (
+						<ButtonBase key={t.id} aria-pressed={on} onClick={() => setTenantId(asNumber(t.id))} sx={{ height: 40, px: 2, gap: 0.75, borderLeft: i ? `1px solid ${ui.line}` : 0, bgcolor: on ? ui.navy : '#fff', color: on ? '#fff' : ui.body, fontSize: 14, fontWeight: on ? 600 : 400, '&:hover': { bgcolor: on ? ui.navy : ui.grey }, '&.Mui-focusVisible': focusRing }}>
+							{t.name}
+							{!has && <Box component='span' sx={{ fontSize: 12, color: on ? '#fbd38d' : ui.orangeText }}>●</Box>}
+						</ButtonBase>
+					);
+				})}
+			</Box>
+		)
+	);
 
-						<table
-							style={{
-								borderCollapse: 'collapse',
-								textAlign: 'center',
-								// margin: '20px auto',
-								// border: '1px solid #000000ff',
-								width: '100%'
+	return (
+		<Box component='section' aria-labelledby='mgmt-section-title' sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 } }}>
+			<Box sx={{ minWidth: 0 }}>
+				<Typography id='mgmt-section-title' component='h2' sx={{ m: 0, fontSize: { xs: 24, md: 28 }, lineHeight: { xs: '32px', md: '36px' }, fontWeight: 700, color: ui.orangeText }}>{defaultSettingsLabel()}</Typography>
+				<Typography sx={{ display: { xs: 'none', sm: 'block' }, fontSize: 15, lineHeight: '22px', color: ui.muted }}>{copy.subtitle}</Typography>
+			</Box>
 
-							}}
-						>
-							<thead>
-								<tr>
-									<th>{roomOptionStateLabel()}</th>
-									<th>{unmanagedLabel()}</th>
-									<th>{configurationLockLabel()}</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td><Tooltip title={disableUnmanagedRoomsTooltipLabel()} placement="right"><span>{disableUnmanagedRoomsLabel()}</span></Tooltip></td>
-									<td><Checkbox disabled={(disableUnmanagedLock && !superAdmin) || fieldsDisabled} checked={disableUnmanaged} onClick={() => setDisableUnmanaged(Boolean(!disableUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={disableUnmanagedLock} onClick={() => setDisableUnmanagedLock(Boolean(!disableUnmanagedLock))} /></td>
-								</tr>
-								<tr>
-									<td><Tooltip title={endToEndEncryptionTooltipLabel()} placement="right"><span>{endToEndEncryptionLabel()}</span></Tooltip></td>
-									<td><Checkbox disabled={(endToEndEncryptionLock && !superAdmin) || fieldsDisabled} checked={endToEndEncryption} onClick={() => setEndToEndEncryption(Boolean(!endToEndEncryption))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={endToEndEncryptionLock} onClick={() => setEndToEndEncryptionLock(Boolean(!endToEndEncryptionLock))} /></td>
-								</tr>
-								<tr>
-									<td><Tooltip title={roomLockedTooltipLabel()} placement="right"><span>{roomLockedMgmtLabel()}</span></Tooltip></td>
-									<td><Checkbox disabled={(lockedLock && !superAdmin) || fieldsDisabled} checked={lockedUnmanaged} onClick={() => setLockUnmanaged(Boolean(!lockedUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={lockedLock} onClick={() => setLockLock(Boolean(!lockedLock))} /></td>
-								</tr>
-								<tr>
-									<td>{raiseHandMgmtLabel()}</td>
-									<td><Checkbox disabled={(raiseHandEnabledLock && !superAdmin) || fieldsDisabled} checked={raiseHandEnabledUnmanaged} onClick={() => setRaiseHandEnabledUnmanaged(Boolean(!raiseHandEnabledUnmanaged))}/></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={raiseHandEnabledLock} onClick={() => setRaiseHandEnabledLock(Boolean(!raiseHandEnabledLock))}/></td>
-								</tr>
-								<tr>
-									<td>{reactionsEnabledLabel()}</td>
-									<td><Checkbox disabled={(reactionsEnabledLock && !superAdmin) || fieldsDisabled} checked={reactionsEnabledUnmanaged} onClick={() => setReactionsEnabledUnmanaged(Boolean(!reactionsEnabledUnmanaged))}/></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={reactionsEnabledLock} onClick={() => setReactionsEnabledLock(Boolean(!reactionsEnabledLock))}/></td>
-								</tr>
-								<tr>
-									<td>{localRecordingMgmtLabel()}</td>
-									<td><Checkbox disabled={(localRecordingEnabledLock && !superAdmin) || fieldsDisabled} checked={localRecordingEnabledUnmanaged} onClick={() => setLocalRecordingEnabledUnmanaged(Boolean(!localRecordingEnabledUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={localRecordingEnabledLock} onClick={() => setLocalRecordingEnabledLock(Boolean(!localRecordingEnabledLock))} /></td>
-								</tr>
-								<tr>
-									<td>{chatServiceLabel()}</td>
-									<td><Checkbox disabled={(chatEnabledLock && !superAdmin) || fieldsDisabled} checked={chatEnabledUnmanaged} onClick={() => setChatEnabledUnmanaged(Boolean(!chatEnabledUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={chatEnabledLock} onClick={() => setChatEnabledLock(Boolean(!chatEnabledLock))} /></td>
-								</tr>
-								<tr>
-									<td>{breakoutRoomsServiceLabel()}</td>
-									<td><Checkbox disabled={(breakoutsEnabledLock && !superAdmin) || fieldsDisabled} checked={breakoutsEnabledUnmanaged} onClick={() => setBreakoutsEnabledUnmanaged(Boolean(!breakoutsEnabledUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={breakoutsEnabledLock} onClick={() => setBreakoutsEnabledLock(Boolean(!breakoutsEnabledLock))} /></td>
-								</tr>
-								<tr>
-									<td>{filesharingServiceLabel()}</td>
-									<td><Checkbox disabled={(filesharingEnabledLock && !superAdmin) || fieldsDisabled} checked={filesharingEnabledUnmanaged} onClick={() => setFilesharingEnabledUnmanaged(Boolean(!filesharingEnabledUnmanaged))} /></td>
-									<td><Checkbox disabled={!superAdmin || fieldsDisabled} checkedIcon={<LockIcon />} icon={<LockOpenIcon />} checked={filesharingEnabledLock} onClick={() => setFilesharingEnabledLock(Boolean(!filesharingEnabledLock))} /></td>
-								</tr>
-							</tbody>
-						</table>
-						<Grid size={8}>
+			{tenantPicker}
 
-							<TextField
-								margin="dense"
-								id="tracker"
-								error={false}
-								label={roomTrackerLabel()}
-								type="text"
-								fullWidth
-								disabled={fieldsDisabled}
-								onChange={handleTracker}
-								value={tracker}
-								helperText={tracker === '' ? trackerHelperTextLabel() : undefined}
-							/>
-						</Grid>
-						<Grid size={4}>
-							<TextField
-								required
-								margin="dense"
-								id="maxFileSize"
-								label={maxFileSizedLabel()}
-								type="number"
-								fullWidth
-								disabled={fieldsDisabled}
-								onChange={handlemaxFileSize}
-								value={maxFileSize}
-								slotProps = {{ input: {
-									endAdornment: <InputAdornment position="end">MB</InputAdornment>,
-								} }}
-							/>
-						</Grid>
-						<TextField
-							margin="dense"
-							id="background"
-							label={roomBackgroundURLLabel()}
-							type="text"
-							fullWidth
-							disabled={fieldsDisabled}
-							onChange={handleBackgroundChange}
-							value={background}
-						/>
-						<TextField
-							margin="dense"
-							id="Logo"
-							label={roomLogoURLLabel()}
-							type="text"
-							fullWidth
-							disabled={fieldsDisabled}
-							onChange={handleLogoChange}
-							value={logo}
-						/>
-						<Autocomplete
-							options={roles}
-							getOptionLabel={(option) => option.name}
-							fullWidth
-							disableClearable
-							disabled={fieldsDisabled}
-							onChange={handleDefaultRoleId}
-							value={defaultRoleIdOption}
-							sx={{ marginTop: '8px' }}
-							renderInput={(params) => <TextField required {...params} label={defaultRoleIdLabel()} />}
+			{!loaded ? (
+				<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>{[ 0, 1 ].map((i) => <Skeleton key={i} variant='rectangular' height={200} sx={{ borderRadius: 0 }} />)}</Box>
+			) : !record || !form ? (
+				<EmptyBox>
+					<Box sx={{ mb: 1.5 }}>{copy.noDefaults(tenant?.name ?? '')}</Box>
+					<Button startIcon={<AddOutlinedIcon />} onClick={create} disabled={busy || !tenantId} sx={orangeButtonSx}>{copy.create}</Button>
+				</EmptyBox>
+			) : <>
+				{card(copy.limits, copy.limitsHelp, (
+					<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
+						{numberField('numberLimit', copy.numberLimit, true)}
+						{numberField('userManagedRoomNumberLimit', copy.userLimit, false)}
+						{numberField('managerManagedRoomNumberLimit', copy.managerLimit, true)}
+					</Box>
+				))}
 
-						/>
-						{/* 						<Autocomplete
-							options={roles}
-							getOptionLabel={(option) => option.name}
-							fullWidth
-							disableClearable
-							onChange={handleTenantPermissionLimitRole}
-							value={tenantPermissionLimitRoleOption}
-							sx={{ marginTop: '8px' }}
-							renderInput={(params) => <TextField required {...params} label={'tenantPermissionLimitRole'} />}
-						/> */}
-					</Grid>
-					
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={delTenant} disabled={cantDelete} color='warning'>{deleteLabel()}</Button>
-					<Button onClick={handleClose}>{cancelLabel()}</Button>
-					<Button onClick={addTenant} disabled={cantPatch}>{applyLabel()}</Button>
-				</DialogActions>
-			</Dialog>
-		</div>
-		<MaterialReactTable localization={localization}
-			muiTableBodyRowProps={({ row }) => ({
-				onClick: () => {
+				{card(copy.adhoc, copy.adhocHelp, <>
+					<Box component='ul' aria-label={copy.adhoc} sx={{ listStyle: 'none', m: 0, p: 0, borderTop: `1px solid ${ui.lineSoft}`, display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1fr)' }, columnGap: 4 }}>
+						{FLAGS.map(flagRow)}
+					</Box>
+					<Box sx={{ mt: 1.25, display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13, color: ui.muted }}><LockOutlinedIcon sx={{ fontSize: 16 }} />{copy.lockHelp}</Box>
+				</>)}
 
-					const r = row.getAllCells();
+				{card(copy.look, copy.lookHelp, (
+					<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 2fr) minmax(0, 1fr)' }, gap: 2 }}>
+						<TextField label={copy.tracker} size='small' value={form.tracker} placeholder='wss://tracker.example.edu.bd/path' onChange={(e) => set({ tracker: e.target.value })} helperText={form.tracker.trim() ? ' ' : trackerHelperTextLabel()} {...monoInput} />
+						<TextField label={copy.maxFile} type='number' size='small' value={form.maxFileSize} onChange={(e) => set({ maxFileSize: parseInt(e.target.value) })} error={!(form.maxFileSize >= 0)} helperText=' ' slotProps={{ htmlInput: { min: 0 }, input: { sx: { borderRadius: 0, bgcolor: '#fff' }, endAdornment: <InputAdornment position='end'>MB</InputAdornment> } }} />
+						<Box sx={{ minWidth: 0 }}>
+							<TextField label={copy.background} type='url' size='small' fullWidth value={form.background} placeholder='https://' onChange={(e) => set({ background: e.target.value })} {...monoInput} />
+							{imgPreview(form.background, true)}
+						</Box>
+						<Box sx={{ minWidth: 0 }}>
+							<TextField label={copy.logo} type='url' size='small' fullWidth value={form.logo} placeholder='https://' onChange={(e) => set({ logo: e.target.value })} {...monoInput} />
+							{imgPreview(form.logo, false)}
+						</Box>
+						<TextField select label={copy.defaultRole} size='small' value={tenantRoles.some((r) => sameId(r.id, form.defaultRoleId)) ? form.defaultRoleId : 0} onChange={(e) => set({ defaultRoleId: asNumber(e.target.value) })} sx={{ gridColumn: { md: '1 / 2' } }} {...fieldProps}>
+							<MenuItem value={0}>{copy.noRole}</MenuItem>
+							{tenantRoles.map((r) => <MenuItem key={r.id} value={asNumber(r.id)}>{r.name}</MenuItem>)}
+						</TextField>
+					</Box>
+				))}
 
-					const tid = r[0].getValue();
-					const ttenantId: unknown = row.original.tenantId;
-
-					if (typeof tid === 'number') {
-						setId(tid);
-					} else if (typeof tid == 'string') {
-						setId(parseInt(tid));
-					}
-
-					if (typeof ttenantId === 'number') {
-						const ttenant = tenants.find((x) => x.id == ttenantId);
-
-						if (ttenant) {
-							setTenantIdOption(ttenant);
-						}
-						setTenantId(ttenantId);
-					} else if (typeof ttenantId === 'string') {
-						const ttenant = tenants.find((x) => x.id == parseInt(ttenantId));
-
-						if (ttenant) {
-							setTenantIdOption(ttenant);
-						}
-						setTenantId(parseInt(ttenantId));
-					} else {
-						setTenantId(0);
-					}
-			
-					const d = data.find((dt) => dt.id == tid);
-
-					if (d) {
-						setTenantId(parseInt(d.tenantId));
-						setNumberLimit(parseInt(d.numberLimit));
-						setLiveNumberLimit(parseInt(d.liveNumberLimit)|1000);
-						setUserManagedRoomNumberLimit(parseInt(d.userManagedRoomNumberLimit));
-						setManagerManagedRoomNumberLimit(parseInt(d.managerManagedRoomNumberLimit));
-						setDisableUnmanaged(Boolean(d.disableUnmanaged));
-						setDisableUnmanagedLock(Boolean(d.disableUnmanagedLock));
-						setEndToEndEncryption(Boolean(d.endToEndEncryption));
-						setEndToEndEncryptionLock(Boolean(d.endToEndEncryptionLock));
-						setLockUnmanaged(Boolean(d.lockedUnmanaged));
-						setRaiseHandEnabledUnmanaged(Boolean(d.raiseHandEnabledUnmanaged));
-						setLocalRecordingEnabledUnmanaged(Boolean(d.localRecordingEnabledUnmanaged));
-						setLockLock(Boolean(d.lockedLock));
-						setRaiseHandEnabledLock(Boolean(d.raiseHandEnabledLock));
-						setLocalRecordingEnabledLock(Boolean(d.localRecordingEnabledLock));
-						setChatEnabledUnmanaged(Boolean(d.chatEnabledUnmanaged));
-						setBreakoutsEnabledUnmanaged(Boolean(d.breakoutsEnabledUnmanaged));
-						setFilesharingEnabledUnmanaged(Boolean(d.filesharingEnabledUnmanaged));
-						setChatEnabledLock(Boolean(d.chatEnabledLock));
-						setBreakoutsEnabledLock(Boolean(d.breakoutsEnabledLock));
-						setFilesharingEnabledLock(Boolean(d.filesharingEnabledLock));
-						setTracker(d.tracker || '');
-						setMaxFileSize(parseInt(d.maxFileSize));
-						setBackground(d.background || '');
-						setLogo(d.logo || '');
-						setDefaultRoleId(parseInt(d.defaultRoleId));
-						setReactionsEnabledLock(Boolean(d.reactionsEnabledLock));
-						setReactionsEnabledUnmanaged(Boolean(d.reactionsEnabledUnmanaged));
-						// eslint-disable-next-line no-shadow
-						setDefaultRoleIdOption(roles.find((r) => parseInt(d.defaultRoleId)==r.id)|| undefined);
-						// setTenantPermissionLimitRole(parseInt(d.tenantPermissionLimitRole));
-						// setTenantPermissionLimitRoleOption(roles.find((r) => parseInt(d.tenantPermissionLimitRole) == r.id)|| undefined);
-					}
-					handleClickOpenNoreset();
-
-				}
-			})}
-			columns={columns}
-			data={tableData} // fallback to array if data is undefined
-			initialState={{
-				columnVisibility: {
-				}
-			}}
-			state={{ isLoading }}
-		/>
-	</>;
+				<Box sx={{ position: 'sticky', bottom: 0, zIndex: 2, px: { xs: 2, sm: 3 }, py: 1.25, bgcolor: '#fff', border: `1px solid ${ui.line}`, borderTop: `3px solid ${dirty ? ui.orange : ui.line}`, display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+					{confirmDelete
+						? <><Button variant='outlined' onClick={() => setConfirmDelete(false)} sx={{ borderRadius: 0, height: 44 }}>{cancelLabel()}</Button><Button variant='contained' onClick={remove} disabled={busy} sx={{ borderRadius: 0, height: 44, boxShadow: 'none', bgcolor: '#b42318', '&:hover': { bgcolor: '#8f1d14' } }}>{copy.deleteConfirm}</Button><Box component='span' sx={{ fontSize: 13, color: ui.muted }}>{copy.deleteHelp}</Box></>
+						: <Button variant='outlined' startIcon={<DeleteOutlineOutlinedIcon />} onClick={remove} disabled={busy} sx={{ ...dangerOutlinedSx, height: 44 }}>{copy.deleteDefaults}</Button>}
+					<Box role='status' aria-live='polite' sx={{ flexGrow: 1, minWidth: 0, fontSize: 13, color: ui.muted, display: { xs: 'none', sm: 'block' } }}>
+						{savedAt && !dirty ? <SavedNote text={copy.saved} /> : copy.foot}
+					</Box>
+					{dirty && <Button variant='outlined' onClick={() => setForm(base)} sx={{ borderRadius: 0, height: 44 }}>{cancelLabel()}</Button>}
+					<Button onClick={save} disabled={!canSave} sx={{ ...orangeButtonSx, ...(justSaved ? savedButtonSx : {}) }}>{justSaved ? <SavedTick label={copy.saved} /> : copy.save}</Button>
+				</Box>
+			</>}
+		</Box>
+	);
 };
 
 export default DefaultTable;

@@ -12,9 +12,15 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import InputAdornment from '@mui/material/InputAdornment';
 import ButtonBase from '@mui/material/ButtonBase';
 import LinearProgress from '@mui/material/LinearProgress';
 import Skeleton from '@mui/material/Skeleton';
+import SvgIcon from '@mui/material/SvgIcon';
 import { visuallyHidden } from '@mui/utils';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,11 +38,12 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import KeyboardDoubleArrowLeftOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined';
-import KeyboardDoubleArrowRightOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowRightOutlined';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import TenantTable from '../../components/managementservice/tenants/Tenant';
@@ -44,22 +51,21 @@ import RoomTable from '../../components/managementservice/rooms/Room';
 import GroupTable from '../../components/managementservice/groups/Groups';
 import UserTable from '../../components/managementservice/users/Users';
 import RoleTable from '../../components/managementservice/role/Role';
-import { getData, getUserData, startMGMTListeners, stopMGMTListeners } from '../../store/actions/managementActions';
+import { getData, getDataByID, getUserData, startMGMTListeners, stopMGMTListeners } from '../../store/actions/managementActions';
+import { sectionEnterSx } from '../../components/managementservice/motion';
+import Overview from '../../components/managementservice/overview/Overview';
 import { useAppDispatch, useAppSelector, useNotifier } from '../../store/hooks';
-import TenantAdminTable from '../../components/managementservice/tenants/TenantAdmin';
-import TenantOwnerTable from '../../components/managementservice/tenants/TenantOwner';
-import { checkJWT, logout } from '../../store/actions/permissionsActions';
+import { adminLogin, checkJWT, logout } from '../../store/actions/permissionsActions';
 import { setLocale } from '../../store/actions/localeActions';
 import { managamentActions } from '../../store/slices/managementSlice';
 import SignIn from '../../components/settingsdialog/managementsettings/ManagementAdminLoginSettings';
-import GroupRoleTable from '../../components/managementservice/groups/GroupRole';
-import GroupUserTable from '../../components/managementservice/groups/GroupUser';
 import RuleTable from '../../components/managementservice/rules/Rule';
-import { defaultSettingsLabel, defaultsLabel, groupRolesLabel, groupsLabel, groupUsersLabel, logoutLabel, meetingsLabel, rolesLabel, roomSettingsLabel, roomsLabel, rulesLabel, selectLanguageLabel, tenantSettingsLabel, tenantsLabel, usersLabel } from '../../components/translated/translatedComponents';
+import { CustomLoginButton } from '../../components/controlbuttons/LoginButton';
+import { emailAddressLabel, passwordLabel, signInLabel, defaultsLabel, groupsLabel, logoutLabel, meetingsLabel, rolesLabel, roomsLabel, rulesLabel, selectLanguageLabel, tenantsLabel, usersLabel } from '../../components/translated/translatedComponents';
 import DefaultTable from '../../components/managementservice/defaults/Defaults';
 import MeetingsTable from '../../components/managementservice/meetings/Meetings';
 import { localeList } from '../../utils/intlManager';
-import { ThemeProvider, alpha, createTheme, keyframes } from '@mui/material/styles';
+import { ThemeProvider, alpha, createTheme } from '@mui/material/styles';
 import edumeetConfig from '../../utils/edumeetConfig';
 
 const mgmtBrand = {
@@ -72,6 +78,9 @@ const mgmtBrand = {
 	orange: '#fe9b2a',
 	orangeDark: '#e8851a',
 	orangeLight: '#fff3e5',
+	// The brand orange darkened for text: 3:1 or more on white, the page
+	// grey and orangeLight, so it is only used at 20px bold and up.
+	orangeText: '#c96a00',
 	surface: '#f4f7fb',
 	white: '#ffffff',
 	text: '#0f1f3a',
@@ -118,9 +127,8 @@ const mgmtShadow = {
 	cardHover: `0 2px 4px ${alpha(mgmtBrand.navy, 0.08)}, 0 8px 24px ${alpha(mgmtBrand.navy, 0.1)}`,
 	header: `0 1px 0 ${mgmtBrand.border}`,
 	dialog: `0 24px 60px ${alpha(mgmtBrand.navy, 0.3)}`,
-	// Neutral shadows for the sign-in card and its admin mockup (plan §7.4).
-	signInCard: `0 24px 48px ${alpha(mgmtNeutral.ink, 0.12)}`,
-	signInMock: `0 1px 2px ${alpha(mgmtNeutral.ink, 0.04)}, 0 20px 40px ${alpha(mgmtNeutral.ink, 0.08)}`,
+	// Neutral shadow for the sign-in card.
+	signInCard: `0 1px 2px ${alpha(mgmtNeutral.ink, 0.04)}, 0 24px 48px ${alpha(mgmtNeutral.ink, 0.08)}`,
 } as const;
 
 const mgmtType = {
@@ -135,13 +143,13 @@ const mgmtType = {
 } as const;
 
 const mgmtLayout = {
-	sidebarWidth: 264,
-	railWidth: 72,
+	sidebarWidth: 248,
+	railWidth: 64,
 	mobileDrawerWidth: 'min(300px, 85vw)',
 	headerHeight: 64,
 	headerHeightCompact: 56,
-	navItemHeight: 44,
-	navItemHeightCompact: 40,
+	navItemHeight: 40,
+	navItemHeightCompact: 36,
 	contentMaxWidth: 1440,
 	gutter: 24,
 	gutterPhone: 16,
@@ -227,7 +235,7 @@ const mgmtTheme = createTheme(edumeetConfig.theme, {
 						'&::before': maskIcon(plusIcon),
 					},
 					
-					[`.MuiDialog-root ${addItemSlot}`]: {
+					[`.MuiDialog-root ${addItemSlot}, .MuiDrawer-root ${addItemSlot}`]: {
 						...outlinedBlueButton,
 						padding: '0 16px 0 12px',
 					},
@@ -504,6 +512,7 @@ const copy = {
 	admin: 'Admin',
 	dashboard: 'Dashboard',
 	signIn: 'Sign in',
+	back: 'Back',
 	navigation: 'Admin navigation',
 	home: 'eduKotha home',
 	openMenu: 'Open menu',
@@ -518,7 +527,6 @@ const copy = {
 		tenant: 'Tenant',
 	},
 	roles: {
-		superAdmin: 'Super admin',
 		tenantOwner: 'Tenant owner',
 		tenantAdmin: 'Tenant admin',
 	},
@@ -537,13 +545,15 @@ const copy = {
 	swipeHint: 'Swipe the table for more columns',
 	welcome: 'Welcome back',
 	dashboardIntro: 'Choose what you want to manage. You see only the areas your role allows.',
-	signInSubtitle: 'Sign in with your institution account.',
-	or: 'or',
-	heroEyebrow: 'Bangladesh Research and Education Network (BdREN)',
-	heroTitle: 'Manage your institution\'s eduKotha',
-	heroSubtitle: 'Rooms, people and settings for your online classes and meetings, in one place.',
-	mockLabel: 'Animated preview of the eduKotha admin console: opening Rooms and adding a room',
-	mockToast: 'Room created',
+	signInTitle: 'Sign in to manage your institution',
+	signInSubtitle: 'Rooms, people and settings for your eduKotha.',
+	signInMethod: 'Sign-in method',
+	tabInstitution: 'Institution',
+	tabLocal: 'Local admin',
+	institutionHint: 'Continue with your institution\'s single sign-on.',
+	showPassword: 'Show password',
+	hidePassword: 'Hide password',
+	footerNote: 'Bangladesh Research and Education Network (BdREN)',
 	skipToContent: 'Skip to content',
 	loading: 'Loading',
 	changingLanguage: 'Changing language',
@@ -561,49 +571,62 @@ type NavItem = {
 
 const navGroupOrder: NavGroupId[] = [ 'overview', 'meetings', 'people', 'tenant' ];
 
+// Sidebar design A (canvas "Admin Sidebar Redesign", 2026-10-25): square
+// rows, sentence-case group labels, and the open section as a solid navy
+// block with white text.
 const navItemSx = {
-	position: 'relative',
 	minHeight: mgmtLayout.navItemHeight,
-	borderRadius: `${mgmtShape.itemRadius}px`,
+	borderRadius: 0,
 	px: 1.5,
 	gap: 1.5,
 	color: mgmtNeutral.text,
 	transition: mgmtTransition,
-	'& .MuiListItemIcon-root': { minWidth: 0, color: 'inherit' },
+	'& .MuiListItemIcon-root': { minWidth: 0, color: mgmtNeutral.label },
 	'& .MuiSvgIcon-root': { fontSize: 20 },
 	'& .MuiListItemText-root': { my: 0 },
 	'& .MuiListItemText-primary': { fontSize: 14, lineHeight: '20px', fontWeight: 400 },
 	'&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink },
-	'&.Mui-focusVisible': { ...focusRing(), backgroundColor: mgmtNeutral.hover },
+	'&:hover .MuiListItemIcon-root': { color: mgmtNeutral.ink },
+	'&.Mui-focusVisible': { ...focusRing(mgmtBrand.blue, 2, -2), backgroundColor: mgmtNeutral.hover },
 	'&.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
-		backgroundColor: mgmtNeutral.hover,
-		color: mgmtNeutral.ink,
+		backgroundColor: mgmtBrand.navy,
+		color: mgmtBrand.white,
 	},
-	'&.Mui-selected .MuiListItemIcon-root': { color: mgmtBrand.blue },
-	'&.Mui-selected .MuiListItemText-primary': { fontWeight: 600 },
-	'&.Mui-selected::before': {
-		content: '""',
-		position: 'absolute',
-		left: -8,
-		top: '50%',
-		width: 4,
-		height: 24,
-		marginTop: '-12px',
-		borderRadius: '0 4px 4px 0',
-		backgroundColor: mgmtBrand.orange,
-	},
+	'&.Mui-selected.Mui-focusVisible': { outlineColor: mgmtBrand.orange },
+	'&.Mui-selected .MuiListItemIcon-root': { color: mgmtBrand.white },
+	'&.Mui-selected .MuiListItemText-primary': { fontWeight: 500 },
 	[shortScreen]: { minHeight: mgmtLayout.navItemHeightCompact },
 	[reducedMotion]: { transition: 'none' },
 } as const;
 
 const groupLabelSx = {
-	...mgmtType.groupLabel,
 	display: 'block',
 	px: 1.5,
-	py: 0.75,
-	color: mgmtNeutral.label,
-	[shortScreen]: { py: 0.5 },
+	pb: 0.75,
+	fontSize: 12,
+	lineHeight: '16px',
+	fontWeight: 600,
+	color: mgmtBrand.textSecondary,
+	[shortScreen]: { pb: 0.5 },
 } as const;
+
+// Small square icon buttons in the sidebar and rail (collapse, logout).
+const sidebarIconButtonSx = {
+	width: 36,
+	height: 36,
+	flexShrink: 0,
+	borderRadius: 0,
+	color: mgmtNeutral.label,
+	'&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink },
+	'&.Mui-focusVisible': focusRing(mgmtBrand.blue, 2, -2),
+} as const;
+
+// The collapse / expand glyph: a panel with an arrow pointing in or out.
+const PanelIcon = ({ open }: { open: boolean }) => (
+	<SvgIcon viewBox='0 0 24 24' sx={{ fontSize: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round' }}>
+		<path d={open ? 'M4 4h16v16H4zM9 4v16M16 10l-2 2 2 2' : 'M4 4h16v16H4zM9 4v16M14 10l2 2-2 2'} />
+	</SvgIcon>
+);
 
 const BrandMark = ({ size = 'md', onNavy = false }: { size?: 'sm' | 'md'; onNavy?: boolean }) => (
 	<Box sx={{ display: 'flex', alignItems: 'center', gap: size === 'sm' ? 1 : 1.25, minWidth: 0 }}>
@@ -649,21 +672,6 @@ const BrandMark = ({ size = 'md', onNavy = false }: { size?: 'sm' | 'md'; onNavy
 );
 
 const smUp = '@media (min-width: 600px)';
-const chevronDown = 'M6 9l6 6 6-6';
-
-const roleChipSx = {
-	alignSelf: 'flex-start',
-	fontSize: 12,
-	lineHeight: '16px',
-	fontWeight: 600,
-	color: mgmtBrand.navy,
-	bgcolor: mgmtBrand.orangeLight,
-	border: `1px solid ${mgmtBrand.orange}`,
-	px: 1.25,
-	py: '2px',
-	borderRadius: `${mgmtShape.pill}px`,
-	whiteSpace: 'nowrap',
-} as const;
 
 const subheadingSx = {
 	m: 0,
@@ -763,290 +771,194 @@ const Section = ({ icon: Icon, title, description, children }: SectionProps) => 
 	</Box>
 );
 
-const signInCardSx = {
-	width: 'min(420px, 100%)',
-	boxSizing: 'border-box',
-	p: { xs: '24px 20px', md: '36px 36px 32px' },
-	bgcolor: mgmtNeutral.panel,
+// Signed-out card (user brief 2026-10-13): one centred card with a small
+// logo, a short title and two tabs, "Institution" (tenant SSO) and
+// "Local admin" (email + password). Built here rather than by restyling the
+// shared SignIn so the markup can follow the design; it dispatches the same
+// login() and adminLogin() actions.
+type SignInTab = 'institution' | 'local';
+
+const signInTabsSx = {
+	minHeight: 44,
+	p: '4px',
+	borderRadius: `${mgmtShape.radius + 2}px`,
+	bgcolor: mgmtNeutral.hover,
 	border: `1px solid ${mgmtNeutral.line}`,
-	borderRadius: `${mgmtShape.cardRadius}px`,
-	boxShadow: mgmtShadow.signInCard,
-	'& .MuiContainer-root': { p: 0, maxWidth: 'none' },
-	'& .MuiContainer-root > .MuiBox-root': { mt: 0, alignItems: 'stretch', gap: { xs: 2, md: 2.5 } },
-	'& h2': {
-		m: 0,
-		fontSize: { xs: 19, md: 22 },
-		lineHeight: { xs: '26px', md: '30px' },
-		fontWeight: 600,
-		color: mgmtNeutral.ink,
-		'&::after': {
-			content: JSON.stringify(copy.signInSubtitle),
-			display: 'block',
-			mt: 0.75,
-			fontSize: 14,
-			lineHeight: '20px',
-			fontWeight: 400,
-			color: mgmtNeutral.muted,
-		},
-	},
-	'& h2 + .MuiBox-root': {
-		display: 'flex',
-		flexDirection: 'column',
-		gap: { xs: 2, md: 2.5 },
-		'&::after': {
-			content: JSON.stringify(copy.or),
-			display: 'block',
-			textAlign: 'center',
-			fontSize: 12,
-			lineHeight: '16px',
-			color: mgmtNeutral.label,
-			background: `linear-gradient(${mgmtNeutral.line}, ${mgmtNeutral.line}) left center / calc(50% - 20px) 1px no-repeat, linear-gradient(${mgmtNeutral.line}, ${mgmtNeutral.line}) right center / calc(50% - 20px) 1px no-repeat`,
-		},
-	},
-	'& h2 + .MuiBox-root > .MuiButton-root': {
-		...orangeButton,
-		width: '100%',
-		height: 48,
-		fontSize: 15,
-		'& .MuiGrid-container': {
-			display: 'flex',
-			flexDirection: 'row',
-			flexWrap: 'nowrap',
-			alignItems: 'center',
-			justifyContent: 'center',
-			gap: '10px',
-			m: 0,
-			width: 'auto',
-		},
-		'& .MuiGrid-container > *': { width: 'auto', maxWidth: 'none', flex: '0 0 auto', p: 0, m: 0 },
-		'& img': { display: 'block', maxHeight: 24 },
-		'& .MuiSvgIcon-root': { display: 'block', fontSize: 20 },
-	},
-	'& h2 + .MuiBox-root + .MuiButton-root': {
-		alignSelf: 'center',
-		height: { xs: 44, md: 40 },
+	'& .MuiTabs-indicator': { display: 'none' },
+	'& .MuiTab-root': {
+		flex: 1,
+		minHeight: 36,
+		minWidth: 0,
 		px: 1.5,
-		'&::after': { ...maskIcon(chevronDown, 16), marginRight: 0, marginLeft: '6px', transition: 'transform 150ms ease' },
-		'&:has(+ form)::after': { transform: 'rotate(180deg)' },
-		[reducedMotion]: { '&::after': { transition: 'none' } },
+		borderRadius: `${mgmtShape.radius}px`,
+		textTransform: 'none',
+		fontSize: 14,
+		lineHeight: '20px',
+		fontWeight: 500,
+		color: mgmtNeutral.muted,
+		transition: mgmtTransition,
+		'&:hover': { color: mgmtNeutral.ink },
+		'&.Mui-focusVisible': focusRing(mgmtBrand.blue, 2, -2),
+		[reducedMotion]: { transition: 'none' },
 	},
-	'& form': {
-		mt: 0,
-		display: 'flex',
-		flexDirection: 'column',
-		gap: { xs: 2, md: 2.5 },
-		'& .MuiFormControl-root': { m: 0 },
-	},
-	'& form button[type="submit"]': {
-		m: 0,
-		height: { xs: 48, md: 44 },
-		fontSize: 15,
-		bgcolor: mgmtBrand.navy,
-		color: mgmtBrand.white,
-		'&:hover': { bgcolor: mgmtBrand.navyLight },
-	},
-	[shortScreen]: {
-		p: '28px 32px 24px',
-		'& .MuiContainer-root > .MuiBox-root, & h2 + .MuiBox-root, & form': { gap: 2 },
+	'& .MuiTab-root.Mui-selected': {
+		color: mgmtNeutral.ink,
+		fontWeight: 600,
+		bgcolor: mgmtNeutral.panel,
+		boxShadow: `0 1px 2px ${alpha(mgmtNeutral.ink, 0.08)}, 0 1px 3px ${alpha(mgmtNeutral.ink, 0.06)}`,
 	},
 } as const;
 
-const mockCursor = keyframes`
-	0%, 8% { left: 73%; top: 80%; transform: none; }
-	16% { left: calc(6% + 10px); top: 92px; transform: none; }
-	17.5% { left: calc(6% + 10px); top: 92px; transform: scale(0.82); }
-	19%, 24% { left: calc(6% + 10px); top: 92px; transform: none; }
-	38% { left: calc(24% + 40px); top: 110px; transform: none; }
-	40.5% { left: calc(24% + 40px); top: 110px; transform: scale(0.82); }
-	42%, 48% { left: calc(24% + 40px); top: 110px; transform: none; }
-	62%, 100% { left: 73%; top: 80%; transform: none; }
-`;
-
-const mockSwitch = (from: string, to: string) => keyframes`
-	0%, 17% { background-color: ${from}; }
-	18%, 96% { background-color: ${to}; }
-	100% { background-color: ${from}; }
-`;
-const mockNavOn = {
-	fill: mockSwitch('transparent', mgmtNeutral.hover),
-	bar: mockSwitch('transparent', mgmtBrand.orange),
-	dot: mockSwitch('#cbd5e1', mgmtBrand.blue),
-	line: mockSwitch(mgmtNeutral.line, mgmtNeutral.text),
-};
-const mockNavOff = {
-	fill: mockSwitch(mgmtNeutral.hover, 'transparent'),
-	bar: mockSwitch(mgmtBrand.orange, 'transparent'),
-	dot: mockSwitch(mgmtBrand.blue, '#cbd5e1'),
-	line: mockSwitch(mgmtNeutral.text, mgmtNeutral.line),
-};
-
-const mockRow = keyframes`
-	0%, 19% { visibility: hidden; clip-path: inset(0 100% 0 0); }
-	19.01% { visibility: visible; clip-path: inset(0 100% 0 0); }
-	24%, 96% { visibility: visible; clip-path: inset(0 0 0 0); }
-	96.01%, 100% { visibility: hidden; clip-path: inset(0 0 0 0); }
-`;
-const mockPress = keyframes`
-	0%, 40% { transform: none; background-color: ${mgmtBrand.orange}; }
-	41% { transform: scale(0.9); background-color: ${mgmtBrand.orangeDark}; }
-	43%, 100% { transform: none; background-color: ${mgmtBrand.orange}; }
-`;
-const mockNewRow = keyframes`
-	0%, 42% { visibility: hidden; height: 0; border-bottom-width: 0; background-color: ${mgmtBrand.orangeLight}; }
-	42.01% { visibility: visible; height: 0; border-bottom-width: 0; }
-	48% { height: 28px; border-bottom-width: 1px; background-color: ${mgmtBrand.orangeLight}; }
-	76% { background-color: ${mgmtBrand.orangeLight}; }
-	86%, 96% { visibility: visible; height: 28px; border-bottom-width: 1px; background-color: ${mgmtBrand.white}; }
-	96.01%, 100% { visibility: hidden; height: 0; border-bottom-width: 0; }
-`;
-const mockToastIn = keyframes`
-	0%, 48% { visibility: hidden; transform: translateY(40px); }
-	48.01% { visibility: visible; transform: translateY(40px); }
-	52%, 74% { visibility: visible; transform: none; }
-	79% { visibility: visible; transform: translateY(40px); }
-	79.01%, 100% { visibility: hidden; transform: translateY(40px); }
-`;
-const mockLoop = (name: string, delay = 0) => `${name} 10s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s infinite`;
-
-const mockNavRows = [ 0.62, 0.8, 0.55, 0.7, 0.5, 0.66, 0.58 ];
-const mockRooms = [
-	{ name: 'cse-lecture-101', role: 'Normal' },
-	{ name: 'eee-lab-review', role: 'Normal' },
-	{ name: 'bdren-board', role: 'Moderator' },
-	{ name: 'phd-defence', role: 'Normal' },
-];
-const mockGrid = { display: 'grid', gridTemplateColumns: '12% 38% 1fr 22%', alignItems: 'center', px: 1 } as const;
-
-const AdminMock = () => (
-	<Box
-		role='img'
-		aria-label={copy.mockLabel}
-		sx={{
-			position: 'relative',
-			width: '100%',
-			maxWidth: 600,
-			aspectRatio: '16 / 10',
-			boxSizing: 'border-box',
-			display: 'flex',
-			flexDirection: 'column',
-			bgcolor: mgmtNeutral.panel,
-			border: `1px solid ${mgmtNeutral.line}`,
-			borderRadius: '20px',
-			boxShadow: mgmtShadow.signInMock,
-			overflow: 'hidden',
-			[shortScreen]: { maxWidth: 480 },
-			[reducedMotion]: { '& *': { animation: 'none !important' }, '& .mock-cursor, & .mock-toast': { display: 'none' } },
-		}}
-	>
-		<Box aria-hidden sx={{ height: 28, flexShrink: 0, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 0.75, px: 1.5, borderBottom: `1px solid ${mgmtNeutral.line}` }}>
-			{[ 0, 1, 2 ].map((dot) => <Box key={dot} sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: mgmtNeutral.line }} />)}
-			<Box sx={{ ml: 1, px: 1.25, py: 0.25, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtNeutral.hover, color: mgmtNeutral.muted, fontSize: 11, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-				{`${window.location.host}/mgmt-admin`}
-			</Box>
-		</Box>
-		<Box aria-hidden sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-			{/* Mini sidebar, white like the real one: a logo bar, nav rows, a user row. */}
-			<Box sx={{ width: '24%', flexShrink: 0, boxSizing: 'border-box', bgcolor: mgmtNeutral.panel, borderRight: `1px solid ${mgmtNeutral.line}`, p: 1.25, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-				<Box sx={{ height: 14, width: '70%', borderRadius: '4px', bgcolor: mgmtNeutral.line, mb: 0.75 }} />
-				{mockNavRows.map((w, i) => {
-					const active = i === 1;
-					const anim = i === 0 ? mockNavOff : active ? mockNavOn : null;
-
-					return (
-						<Box key={i} sx={{ position: 'relative', height: 16, borderRadius: '5px', display: 'flex', alignItems: 'center', gap: 0.75, px: 0.75, bgcolor: active ? mgmtNeutral.hover : 'transparent', animation: anim ? mockLoop(anim.fill) : 'none' }}>
-							<Box sx={{ position: 'absolute', left: -10, top: 3, width: 3, height: 10, borderRadius: '0 2px 2px 0', bgcolor: active ? mgmtBrand.orange : 'transparent', animation: anim ? mockLoop(anim.bar) : 'none' }} />
-							<Box sx={{ width: 7, height: 7, borderRadius: '2px', flexShrink: 0, bgcolor: active ? mgmtBrand.blue : '#cbd5e1', animation: anim ? mockLoop(anim.dot) : 'none' }} />
-							<Box sx={{ height: 4, width: `${w * 100}%`, borderRadius: `${mgmtShape.pill}px`, bgcolor: active ? mgmtNeutral.text : mgmtNeutral.line, animation: anim ? mockLoop(anim.line) : 'none' }} />
-						</Box>
-					);
-				})}
-				<Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 0.75 }}>
-					<Box sx={{ width: 14, height: 14, flexShrink: 0, borderRadius: '50%', bgcolor: mgmtBrand.blueDark }} />
-					<Box sx={{ height: 4, flex: 1, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtNeutral.line }} />
-				</Box>
-			</Box>
-			{/* Header and the Rooms section. */}
-			<Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', bgcolor: mgmtBrand.surface }}>
-				<Box sx={{ height: 30, flexShrink: 0, boxSizing: 'border-box', bgcolor: mgmtBrand.white, borderBottom: `1px solid ${mgmtBrand.border}`, display: 'flex', alignItems: 'center', px: 1.5, gap: 1 }}>
-					<Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1 }}>
-						<Box sx={{ height: 3, width: 44, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.border }} />
-						<Box sx={{ fontSize: 10, fontWeight: 700, lineHeight: 1, color: mgmtBrand.navy }}>{roomsLabel()}</Box>
-					</Box>
-					<Box sx={{ height: 12, width: 44, boxSizing: 'border-box', borderRadius: `${mgmtShape.pill}px`, border: `1px solid ${mgmtBrand.border}` }} />
-					<Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: mgmtBrand.blueDark }} />
-				</Box>
-				<Box sx={{ flex: 1, minHeight: 0, p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-					<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-						<Box sx={{ width: 20, height: 20, borderRadius: '6px', bgcolor: mgmtBrand.blueLight, display: 'grid', placeItems: 'center' }}>
-							<MeetingRoomOutlinedIcon sx={{ fontSize: 12, color: mgmtBrand.blue }} />
-						</Box>
-						<Box>
-							<Box sx={{ fontSize: 12, fontWeight: 700, lineHeight: 1.2, color: mgmtBrand.navy }}>{roomSettingsLabel()}</Box>
-							<Box sx={{ mt: '3px', height: 3, width: 96, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.border }} />
-						</Box>
-					</Box>
-					<Box sx={{ flex: 1, minHeight: 0, bgcolor: mgmtBrand.white, borderRadius: '8px', border: `1px solid ${mgmtBrand.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-						<Box sx={{ height: 26, flexShrink: 0, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 0.75, px: 1, borderBottom: `1px solid ${mgmtBrand.border}` }}>
-							<Box sx={{ px: 0.75, height: 14, borderRadius: '4px', bgcolor: mgmtBrand.orange, color: mgmtBrand.navy, fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', animation: mockLoop(mockPress) }}>+ Add item</Box>
-							<Box sx={{ flex: 1 }} />
-							{[ 0, 1, 2 ].map((i) => <Box key={i} sx={{ width: 8, height: 8, borderRadius: '2px', bgcolor: alpha(mgmtBrand.navy, 0.35) }} />)}
-						</Box>
-						<Box sx={{ ...mockGrid, height: 18, flexShrink: 0, bgcolor: mgmtBrand.surface, borderBottom: `1px solid ${mgmtBrand.border}`, fontSize: 8, fontWeight: 700, color: mgmtBrand.navy }}>
-							<span>#</span><span>Name</span><span>Description</span><span>Role</span>
-						</Box>
-						{/* The room the cursor adds: closed (height 0) in the still frame. */}
-						<Box sx={{ ...mockGrid, height: 0, flexShrink: 0, boxSizing: 'border-box', overflow: 'hidden', visibility: 'hidden', borderBottom: `0 solid ${mgmtBrand.border}`, bgcolor: mgmtBrand.orangeLight, animation: mockLoop(mockNewRow) }}>
-							<Box sx={{ fontSize: 8, color: mgmtBrand.textSecondary }}>{mockRooms.length + 1}</Box>
-							<Box sx={{ fontSize: 9, fontWeight: 600, color: mgmtBrand.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', pr: 0.5 }}>ict-workshop</Box>
-							<Box sx={{ height: 4, width: '68%', borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.border }} />
-							<Box sx={{ justifySelf: 'start', px: 0.5, py: '1px', borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.blueLight, color: mgmtBrand.blueDark, fontSize: 7, fontWeight: 600 }}>Normal</Box>
-						</Box>
-						{mockRooms.map((r, i) => (
-							<Box key={r.name} sx={{ ...mockGrid, height: 28, flexShrink: 0, boxSizing: 'border-box', borderBottom: `1px solid ${mgmtBrand.border}`, animation: mockLoop(mockRow, i * 0.12) }}>
-								<Box sx={{ fontSize: 8, color: mgmtBrand.textSecondary }}>{i + 1}</Box>
-								<Box sx={{ fontSize: 9, fontWeight: 500, color: mgmtBrand.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', pr: 0.5 }}>{r.name}</Box>
-								<Box sx={{ height: 4, width: `${[ 80, 64, 72, 56 ][i]}%`, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.border }} />
-								<Box sx={{ justifySelf: 'start', px: 0.5, py: '1px', borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.blueLight, color: mgmtBrand.blueDark, fontSize: 7, fontWeight: 600 }}>{r.role}</Box>
-							</Box>
-						))}
-					</Box>
-				</Box>
-			</Box>
-		</Box>
-		<Box className='mock-toast' aria-hidden sx={{ position: 'absolute', right: 14, bottom: 14, height: 26, display: 'flex', alignItems: 'center', gap: 0.75, px: 1.25, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.successDark, color: mgmtBrand.white, fontSize: 10, fontWeight: 600, boxShadow: `0 8px 20px ${alpha(mgmtNeutral.ink, 0.18)}`, visibility: 'hidden', animation: mockLoop(mockToastIn) }}>
-			<CheckOutlinedIcon sx={{ fontSize: 12 }} />
-			{copy.mockToast}
-		</Box>
-		<Box component='svg' className='mock-cursor' aria-hidden viewBox='0 0 24 24' sx={{ position: 'absolute', left: '73%', top: '80%', width: 18, height: 18, transformOrigin: '2px 2px', pointerEvents: 'none', filter: `drop-shadow(0 2px 3px ${alpha(mgmtNeutral.ink, 0.3)})`, animation: mockLoop(mockCursor) }}>
-			<path d='M3 2l7.5 19 2.6-7.9L21 10.5z' fill={mgmtNeutral.ink} stroke={mgmtBrand.white} strokeWidth='1.5' strokeLinejoin='round' />
-		</Box>
-	</Box>
-);
-
-const dashboardCardSx = {
+const signInPrimarySx = {
+	...orangeButton,
 	width: '100%',
-	minHeight: 96,
-	display: 'flex',
-	alignItems: 'center',
-	justifyContent: 'flex-start',
-	gap: 2,
-	p: 2.5,
-	textAlign: 'left',
-	bgcolor: mgmtBrand.white,
-	border: `1px solid ${mgmtBrand.border}`,
-	borderRadius: `${mgmtShape.cardRadius}px`,
-	boxShadow: mgmtShadow.card,
-	transition: `${mgmtTransition}, border-color 150ms ease`,
-	'& .card-arrow': { color: mgmtBrand.borderStrong, transition: 'color 150ms ease' },
-	'&:hover, &.Mui-focusVisible': {
-		borderColor: mgmtBrand.blue,
-		boxShadow: mgmtShadow.cardHover,
-		'& .card-arrow': { color: mgmtBrand.orange },
-	},
+	height: 48,
+	borderRadius: `${mgmtShape.radius}px`,
+	fontSize: 15,
+	fontWeight: 600,
+	textTransform: 'none',
+	boxShadow: 'none',
+	'&:hover': { ...orangeButton['&:hover'], boxShadow: 'none' },
 	'&.Mui-focusVisible': focusRing(),
-	[shortScreen]: { minHeight: 80, py: 2 },
-	[reducedMotion]: { transition: 'none', '& .card-arrow': { transition: 'none' } },
 } as const;
+
+const signInFieldSx = {
+	'& .MuiOutlinedInput-root': { borderRadius: `${mgmtShape.radius}px`, bgcolor: mgmtNeutral.panel },
+	'& .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+	'& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: mgmtNeutral.label },
+} as const;
+
+const SignInCard = () => {
+	const dispatch = useAppDispatch();
+	const [ tab, setTab ] = useState<SignInTab>('institution');
+	const [ showPassword, setShowPassword ] = useState(false);
+
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const data = new FormData(event.currentTarget);
+		const email = String(data.get('email') ?? '').trim();
+		const password = String(data.get('password') ?? '');
+
+		if (email && password) dispatch(adminLogin(email, password));
+	};
+
+	return (
+		<Box
+			sx={{
+				width: 'min(440px, 100%)',
+				boxSizing: 'border-box',
+				p: { xs: '28px 20px 24px', sm: '40px 40px 36px' },
+				bgcolor: mgmtNeutral.panel,
+				border: `1px solid ${mgmtNeutral.line}`,
+				borderRadius: `${mgmtShape.cardRadius + 4}px`,
+				boxShadow: mgmtShadow.signInCard,
+				display: 'flex',
+				flexDirection: 'column',
+				gap: 3,
+				[shortScreen]: { p: '28px 36px 28px', gap: 2.5 },
+			}}
+		>
+			<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+				<Box
+					component={Link}
+					to='/'
+					aria-label={copy.home}
+					sx={{ display: 'inline-flex', mb: 3, borderRadius: '8px', '&:focus-visible': focusRing(), [shortScreen]: { mb: 2 } }}
+				>
+					<Box component='img' src={edumeetConfig.theme.logo} alt='' sx={{ display: 'block', height: 30, width: 'auto', maxWidth: 160 }} />
+				</Box>
+				<Typography
+					id='mgmt-signin-title'
+					component='h1'
+					sx={{ m: 0, color: mgmtNeutral.ink, fontSize: { xs: 22, sm: 24 }, lineHeight: { xs: '30px', sm: '32px' }, fontWeight: 700, letterSpacing: '-0.01em' }}
+				>
+					{copy.signInTitle}
+				</Typography>
+				<Box aria-hidden sx={{ width: 40, height: 4, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.orange, my: 1.5 }} />
+				<Typography sx={{ m: 0, fontSize: 14, lineHeight: '20px', color: mgmtNeutral.muted }}>
+					{copy.signInSubtitle}
+				</Typography>
+			</Box>
+
+			<Tabs
+				value={tab}
+				onChange={(_e, value: SignInTab) => setTab(value)}
+				aria-label={copy.signInMethod}
+				variant='fullWidth'
+				sx={signInTabsSx}
+			>
+				<Tab value='institution' label={copy.tabInstitution} id='mgmt-tab-institution' aria-controls='mgmt-panel-institution' disableRipple />
+				<Tab value='local' label={copy.tabLocal} id='mgmt-tab-local' aria-controls='mgmt-panel-local' disableRipple />
+			</Tabs>
+
+			{tab === 'institution' ? (
+				<Box role='tabpanel' id='mgmt-panel-institution' aria-labelledby='mgmt-tab-institution' sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+					<Typography sx={{ m: 0, fontSize: 14, lineHeight: '20px', color: mgmtNeutral.text, textAlign: 'center' }}>
+						{copy.institutionHint}
+					</Typography>
+					<Box
+						sx={{
+							'& .MuiButton-root': signInPrimarySx,
+							'& .MuiGrid-container': { display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: '10px', m: 0, width: 'auto' },
+							'& .MuiGrid-container > *': { width: 'auto', maxWidth: 'none', flex: '0 0 auto', p: 0, m: 0 },
+							'& img': { display: 'block', maxHeight: 24 },
+							'& .MuiSvgIcon-root': { display: 'block', fontSize: 20 },
+						}}
+					>
+						<CustomLoginButton />
+					</Box>
+				</Box>
+			) : (
+				<Box role='tabpanel' id='mgmt-panel-local' aria-labelledby='mgmt-tab-local'>
+					<Box
+						component='form'
+						onSubmit={handleSubmit}
+						sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, [shortScreen]: { gap: 2 } }}
+					>
+						<TextField
+							required
+							fullWidth
+							id='email'
+							name='email'
+							label={emailAddressLabel()}
+							autoComplete='username'
+							sx={signInFieldSx}
+						/>
+						<TextField
+							required
+							fullWidth
+							id='password'
+							name='password'
+							label={passwordLabel()}
+							type={showPassword ? 'text' : 'password'}
+							autoComplete='current-password'
+							sx={signInFieldSx}
+							slotProps={{
+								input: {
+									endAdornment: (
+										<InputAdornment position='end'>
+											<IconButton
+												edge='end'
+												onClick={() => setShowPassword((prev) => !prev)}
+												aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+												sx={{ color: mgmtNeutral.label, '&.Mui-focusVisible': focusRing() }}
+											>
+												{showPassword ? <VisibilityOffOutlinedIcon sx={{ fontSize: 20 }} /> : <VisibilityOutlinedIcon sx={{ fontSize: 20 }} />}
+											</IconButton>
+										</InputAdornment>
+									),
+								},
+							}}
+						/>
+						<Button type='submit' variant='contained' disableElevation sx={signInPrimarySx}>
+							{signInLabel()}
+						</Button>
+					</Box>
+				</Box>
+			)}
+		</Box>
+	);
+};
 
 const hasLiveToken = () => {
 	try {
@@ -1080,6 +992,8 @@ export default function ManagementUI(/* props: Props */) {
 	const canManageTenant = tenantOwner || tenantAdmin || superAdmin;
 
 	const [ invitesEnabled, setInvitesEnabled ] = useState(false);
+	const [ tenantId, setTenantId ] = useState<number | null>(null);
+	const [ tenantName, setTenantName ] = useState('');
 	const [ authChecking, setAuthChecking ] = useState(hasLiveToken);
 	const [ mobileOpen, setMobileOpen ] = useState(false);
 	const [ languageAnchor, setLanguageAnchor ] = useState<HTMLElement | null>(null);
@@ -1134,6 +1048,8 @@ export default function ManagementUI(/* props: Props */) {
 	
 		if (key) next.set('section', key);
 		else next.delete('section');
+		// ?tenant= belongs to the Tenants page only.
+		if (key !== requested) next.delete('tenant');
 		setSearchParams(next, { replace });
 	};
 
@@ -1194,6 +1110,7 @@ export default function ManagementUI(/* props: Props */) {
 					dispatch(managamentActions.setEmail(tdata.user.email));
 				if (tdata.user.avatar)
 					dispatch(managamentActions.setAvatar(tdata.user.avatar));
+				setTenantId(typeof tdata.user.tenantId === 'number' ? tdata.user.tenantId : null);
 				if (tdata.user.tenantAdmin)
 					dispatch(managamentActions.setTenantAdmin(tdata.user.tenantAdmin));
 				if (tdata.user.tenantOwner)
@@ -1207,6 +1124,29 @@ export default function ManagementUI(/* props: Props */) {
 		})
 			.finally(() => setUserChecked(true));
 	}, [ loggedIn ]);
+
+	// The institution shown at the top of the sidebar. Only owners and admins
+	// may read tenants, so nobody else asks (that would show an error toast).
+	useEffect(() => {
+		if (!loggedIn || !canManageTenant || tenantId == null) {
+			setTenantName('');
+
+			return;
+		}
+		let stale = false;
+
+		dispatch(getDataByID(tenantId, 'tenants')).then((res: unknown) => {
+			const list = (res && typeof res === 'object' && 'data' in res)
+				? (res as { data: Array<{ name?: string }> }).data
+				: [];
+
+			if (!stale) setTenantName((Array.isArray(list) && list[0]?.name) || '');
+		});
+
+		return () => {
+			stale = true;
+		};
+	}, [ loggedIn, canManageTenant, tenantId ]);
 
 	// One list for the sidebar, the icon rail and the phone drawer. The gating
 	// is the same as before: Tenants, Rules, Defaults and Groups need
@@ -1242,9 +1182,9 @@ export default function ManagementUI(/* props: Props */) {
 	const loading = localeInProgress || sectionPending || authPending;
 	const rightsKnown = userChecked && !authPending;
 	const breadcrumb = [ copy.admin, ...(current && current.group !== 'overview' ? [ copy.groups[current.group] ] : []) ];
-	const roleLabel = superAdmin ? copy.roles.superAdmin
-		: tenantOwner ? copy.roles.tenantOwner
-			: tenantAdmin ? copy.roles.tenantAdmin : '';
+	// No "Super admin" tag (user request); owners and admins keep theirs.
+	const roleLabel = tenantOwner ? copy.roles.tenantOwner
+		: tenantAdmin ? copy.roles.tenantAdmin : '';
 	const displayName = username || email;
 	// No name yet: MUI's default person icon instead of a "?".
 	const initials = displayName ? initialsOf(displayName) : undefined;
@@ -1280,9 +1220,9 @@ export default function ManagementUI(/* props: Props */) {
 	const sidebarSkeleton = { bgcolor: mgmtNeutral.hover } as const;
 	const pulse = reduceMotion ? false : 'pulse';
 	const navSkeleton = (rail: boolean) => (
-		<Box aria-hidden sx={{ display: 'flex', flexDirection: 'column', alignItems: rail ? 'center' : 'stretch', gap: 1, px: rail ? 0 : 0.5, pt: 1 }}>
+		<Box aria-hidden sx={{ display: 'flex', flexDirection: 'column', alignItems: rail ? 'center' : 'stretch', gap: 1, pt: 1.5 }}>
 			{[ 0, 1, 2, 3, 4, 5 ].map((i) => (
-				<Skeleton key={i} variant='rounded' animation={pulse} width={rail ? 48 : undefined} height={40} sx={{ ...sidebarSkeleton, borderRadius: `${mgmtShape.itemRadius}px` }} />
+				<Skeleton key={i} variant='rounded' animation={pulse} width={rail ? 44 : undefined} height={rail ? 44 : 40} sx={{ ...sidebarSkeleton, borderRadius: 0 }} />
 			))}
 		</Box>
 	);
@@ -1299,64 +1239,22 @@ export default function ManagementUI(/* props: Props */) {
 		</Box>
 	);
 	
-	// The first screen after sign-in (plan §4.2): a greeting and one card per
-	// section the user may open, grouped like the sidebar.
-	const dashboard = (
-		<Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 3, md: 3.5 }, [shortScreen]: { gap: 2.5 } }}>
-			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-				<Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', columnGap: 1.5, rowGap: 1 }}>
-					<Typography component='h2' sx={{ m: 0, fontSize: { xs: 22, md: 28 }, lineHeight: { xs: '30px', md: '36px' }, fontWeight: 600, color: mgmtBrand.navy, minWidth: 0, overflowWrap: 'anywhere' }}>
-						{displayName ? `${copy.welcome}, ${displayName}` : copy.welcome}
-					</Typography>
-					{roleLabel && <Box component='span' sx={roleChipSx}>{roleLabel}</Box>}
-				</Box>
-				<Typography sx={{ fontSize: 15, lineHeight: '22px', color: mgmtBrand.textSecondary }}>
-					{copy.dashboardIntro}
-				</Typography>
-			</Box>
-			{!rightsKnown && (
-				<Box aria-hidden sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fill, minmax(max(280px, calc((100% - 32px) / 3)), 1fr))' }, gap: 2 }}>
-					{[ 0, 1, 2, 3, 4, 5 ].map((i) => (
-						<Skeleton key={i} variant='rounded' animation={pulse} height={96} sx={{ borderRadius: `${mgmtShape.cardRadius}px` }} />
-					))}
-				</Box>
-			)}
-			{(rightsKnown ? navGroups : []).filter((g) => g.id !== 'overview').map((g) => (
-				<Box component='section' key={g.id} aria-labelledby={`mgmt-cards-${g.id}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-					<Typography id={`mgmt-cards-${g.id}`} component='h3' sx={{ m: 0, fontSize: 13, lineHeight: '18px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: mgmtBrand.textSecondary }}>
-						{g.label}
-					</Typography>
-					<Box
-						component='ul'
-						sx={{
-							listStyle: 'none',
-							m: 0,
-							p: 0,
-							display: 'grid',
-							// As many 280px+ columns as fit, never more than 3: 1 on
-							// phones, 2 on small tablets, 3 from a 1024px tablet up.
-							gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fill, minmax(max(280px, calc((100% - 32px) / 3)), 1fr))' },
-							gap: 2,
-						}}
-					>
-						{g.items.map((item) => (
-							<li key={item.key}>
-								<ButtonBase onClick={() => selectSection(item.key)} sx={dashboardCardSx}>
-									<Box sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: `${mgmtShape.itemRadius}px`, bgcolor: mgmtBrand.blueLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-										<item.icon sx={{ color: mgmtBrand.blue, fontSize: 22 }} />
-									</Box>
-									<Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-										<Box component='span' sx={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: mgmtBrand.navy }}>{item.label}</Box>
-										<Box component='span' sx={{ ...mgmtType.body, color: mgmtBrand.textSecondary }}>{copy.descriptions[item.key]}</Box>
-									</Box>
-									<ArrowForwardOutlinedIcon className='card-arrow' sx={{ fontSize: 20, flexShrink: 0 }} />
-								</ButtonBase>
-							</li>
-						))}
-					</Box>
-				</Box>
-			))}
+	// The first screen after sign-in: the Overview (user brief 2026-10-18),
+	// with one card per section the user may open, in sidebar order.
+	const overviewItems = navGroups.filter((g) => g.id !== 'overview')
+		.flatMap((g) => g.items)
+		.map((i) => ({ key: i.key, label: i.label, icon: i.icon, description: copy.descriptions[i.key] ?? '' }));
+	const openNewRoom = () => {
+		setMobileOpen(false);
+		setSearchParams(new URLSearchParams({ section: 'room', new: '1' }));
+		window.scrollTo({ top: 0 });
+	};
+	const dashboard = !rightsKnown ? (
+		<Box aria-hidden sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
+			{[ 0, 1, 2, 3, 4, 5 ].map((i) => <Skeleton key={i} variant='rectangular' animation={pulse} height={160} sx={{ borderRadius: 0 }} />)}
 		</Box>
+	) : (
+		<Overview name={displayName} roleLabel={roleLabel} items={overviewItems} onOpen={selectSection} onNewRoom={overviewItems.some((i) => i.key === 'room') ? openNewRoom : undefined} />
 	);
 
 	// Function to render the selected component in the placeholder. The
@@ -1366,43 +1264,42 @@ export default function ManagementUI(/* props: Props */) {
 			case 'login':
 				return <SignIn />;
 			case 'default':
-				return section('default', defaultSettingsLabel(), <DefaultTable />);
+				// Defaults draws its own tenant picker and settings page.
+				return <DefaultTable />;
 			case 'tenant':
-				return section('tenant', tenantSettingsLabel(), <>
-					<TenantTable />
-					<TenantOwnerTable />
-					<TenantAdminTable />
-				</>);
+				// Tenants draws its own cards and per-tenant settings page.
+				return <TenantTable />;
 			case 'room':
-				return section('room', roomSettingsLabel(), <RoomTable />);
+				// Rooms draws its own header (title + Add room) and side panel.
+				return <RoomTable />;
 			case 'user':
-				return section('user', usersLabel(), <UserTable />);
+				// Users draws its own header, filters and details panel.
+				return <UserTable />;
 			case 'group':
-				return section('group', groupsLabel(), <>
-					<GroupTable />
-					<Typography component='h3' sx={{ ...subheadingSx, mb: -1 }}>{groupRolesLabel()}</Typography>
-					<GroupRoleTable />
-					<Typography component='h3' sx={{ ...subheadingSx, mb: -1 }}>{groupUsersLabel()}</Typography>
-					<GroupUserTable />
-				</>);
+				// Groups draws its own header, filters and group modal.
+				return <GroupTable />;
 			case 'role':
-				return section('role', rolesLabel(), <RoleTable />);
+				// Roles draws its own header, filters, compare grid and modal.
+				return <RoleTable />;
 			case 'meetings':
 				return section('meetings', meetingsLabel(), <MeetingsTable />);
 			case 'rule':
-				return section('rule', rulesLabel(), <RuleTable />);
+				// Rules draws its own header, filters and rule modal.
+				return <RuleTable />;
 			default:
 				return dashboard;
 		}
 	};
 
-	const avatarNode = (size: number, ring = false) => (
+	const avatarNode = (size: number, ring = false, square = false) => (
 		<Avatar
 			src={avatar || undefined}
 			alt=''
+			variant={square ? 'square' : 'circular'}
 			sx={{
 				width: size,
 				height: size,
+				flexShrink: 0,
 				fontSize: size >= 40 ? 15 : 13,
 				fontWeight: 600,
 				bgcolor: mgmtBrand.blueDark,
@@ -1414,24 +1311,32 @@ export default function ManagementUI(/* props: Props */) {
 		</Avatar>
 	);
 
-	// The full sidebar: permanent from 1200px, and inside the temporary drawer
-	// below that (plan §3.2, white per §7.3).
+	const institutionInitials = tenantName ? initialsOf(tenantName) : '';
+
+	// The full sidebar (design A): permanent from 1200px, and inside the
+	// temporary drawer below that.
 	const renderSidebar = (inDrawer: boolean) => (
 		<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', color: mgmtNeutral.text }}>
 			<Box
 				sx={{
-					height: mgmtLayout.headerHeight,
+					height: { xs: mgmtLayout.headerHeightCompact, md: mgmtLayout.headerHeight },
 					flexShrink: 0,
 					display: 'flex',
 					alignItems: 'center',
-					gap: 1,
-					pl: 2.5,
-					pr: 1,
+					gap: 1.5,
+					pl: { xs: 2, md: 2.5 },
+					pr: { xs: 0.5, md: 1.5 },
 					borderBottom: `1px solid ${mgmtNeutral.line}`,
 					[shortScreen]: { height: mgmtLayout.headerHeightCompact },
 				}}
 			>
-				<BrandMark />
+				<Box component={Link} to='/' aria-label={copy.home} sx={{ display: 'flex', '&:focus-visible': focusRing() }}>
+					<Box component='img' src={edumeetConfig.theme.logo} alt='' sx={{ display: 'block', height: { xs: 20, md: 22 }, width: 'auto', maxWidth: 120 }} />
+				</Box>
+				<Box aria-hidden sx={{ width: '1px', height: 20, bgcolor: '#cbd5e1', flexShrink: 0 }} />
+				<Box component='span' sx={{ fontSize: 13, lineHeight: '16px', fontWeight: 500, color: mgmtNeutral.muted }}>
+					{copy.admin}
+				</Box>
 				{!inDrawer && (
 					<Tooltip title={copy.collapseSidebar} placement='right'>
 						<IconButton
@@ -1440,9 +1345,9 @@ export default function ManagementUI(/* props: Props */) {
 							aria-controls='mgmt-nav'
 							aria-expanded
 							onClick={toggleNav}
-							sx={{ ml: 'auto', width: 36, height: 36, borderRadius: `${mgmtShape.radius}px`, color: mgmtNeutral.label, '&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink }, '&.Mui-focusVisible': focusRing() }}
+							sx={{ ...sidebarIconButtonSx, ml: 'auto' }}
 						>
-							<KeyboardDoubleArrowLeftOutlinedIcon sx={{ fontSize: 20 }} />
+							<PanelIcon open />
 						</IconButton>
 					</Tooltip>
 				)}
@@ -1450,24 +1355,55 @@ export default function ManagementUI(/* props: Props */) {
 					<IconButton
 						aria-label={copy.closeMenu}
 						onClick={() => setMobileOpen(false)}
-						sx={{ ml: 'auto', width: 44, height: 44, color: mgmtNeutral.text, '&:hover': { backgroundColor: mgmtNeutral.hover }, '&.Mui-focusVisible': focusRing() }}
+						sx={{ ...sidebarIconButtonSx, ml: 'auto', width: 44, height: 44, color: mgmtNeutral.muted }}
 					>
-						<CloseOutlinedIcon fontSize='small' />
+						<CloseOutlinedIcon sx={{ fontSize: 20 }} />
 					</IconButton>
 				)}
 			</Box>
 
+			{signedIn && tenantName && (
+				<Box
+					sx={{
+						flexShrink: 0,
+						m: '12px 12px 0',
+						p: '10px 12px',
+						display: 'flex',
+						alignItems: 'center',
+						gap: 1.5,
+						border: `1px solid ${mgmtNeutral.line}`,
+						bgcolor: mgmtNeutral.bg,
+						[desktopUp]: { mt: 2 },
+						[shortScreen]: { mt: 1.5, py: 0.75 },
+					}}
+				>
+					<Box aria-hidden sx={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: mgmtBrand.navy, color: mgmtBrand.white, fontSize: 13, fontWeight: 600 }}>
+						{institutionInitials}
+					</Box>
+					<Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+						<Typography noWrap sx={{ fontSize: { xs: 14, md: 13 }, lineHeight: '18px', fontWeight: 600, color: mgmtNeutral.ink }}>
+							{tenantName}
+						</Typography>
+						{roleLabel && (
+							<Typography noWrap sx={{ fontSize: 12, lineHeight: '16px', color: mgmtBrand.textSecondary }}>
+								{roleLabel}
+							</Typography>
+						)}
+					</Box>
+				</Box>
+			)}
+
 			{signedIn && (
-				<Box sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', px: 1, py: 1.5, display: 'flex', flexDirection: 'column', gap: 1.75, [shortScreen]: { py: 1, gap: 1 } }}>
+				<Box sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', px: 1.5, pt: 0.5, pb: 1.5, display: 'flex', flexDirection: 'column', [shortScreen]: { pb: 1 } }}>
 					{!rightsKnown && navSkeleton(false)}
 					{(rightsKnown ? navGroups : []).map((g) => (
-					// A labelled group holding a real list: div > label + ul > li >
+						// A labelled group holding a real list: div > label + ul > li >
 						// button (axe "list": a ul may only contain li).
-						<Box key={g.id} role='group' aria-labelledby={`mgmt-nav-${g.id}${inDrawer ? '-d' : ''}`}>
+						<Box key={g.id} role='group' aria-labelledby={`mgmt-nav-${g.id}${inDrawer ? '-d' : ''}`} sx={{ pt: 1.75, [shortScreen]: { pt: 1.25 } }}>
 							<Typography id={`mgmt-nav-${g.id}${inDrawer ? '-d' : ''}`} component='div' sx={groupLabelSx}>
 								{g.label}
 							</Typography>
-							<List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+							<List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
 								{g.items.map((item) => {
 									const selected = item.key === selectedComponent;
 
@@ -1477,7 +1413,15 @@ export default function ManagementUI(/* props: Props */) {
 												selected={selected}
 												aria-current={selected ? 'page' : undefined}
 												onClick={() => selectSection(item.key)}
-												sx={{ ...navItemSx, ...(inDrawer ? { '& .MuiListItemText-primary': { fontSize: { xs: 15, md: 14 } } } : {}) }}
+												disableRipple
+												sx={{
+													...navItemSx,
+													...(inDrawer ? {
+														minHeight: { xs: 44, md: mgmtLayout.navItemHeight },
+														gap: { xs: 1.75, md: 1.5 },
+														'& .MuiListItemText-primary': { fontSize: { xs: 15, md: 14 } },
+													} : {}),
+												}}
 											>
 												<ListItemIcon><item.icon /></ListItemIcon>
 												<ListItemText primary={item.label} />
@@ -1500,15 +1444,12 @@ export default function ManagementUI(/* props: Props */) {
 						borderTop: `1px solid ${mgmtNeutral.line}`,
 						display: 'flex',
 						flexDirection: 'column',
-						gap: 0.5,
-						// Short laptops: Logout moves beside the user card, so the
-						// whole nav fits a 1366×768 screen without scrolling.
-						[shortScreen]: { flexDirection: 'row', alignItems: 'center', py: 1 },
+						gap: 1.25,
 					}}
 				>
-					<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, minWidth: 0, flexGrow: 1 }}>
-						{avatarNode(40)}
-						<Box sx={{ minWidth: 0, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+					<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+						{avatarNode(36, false, true)}
+						<Box sx={{ minWidth: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
 							{!displayName && !rightsKnown && (
 								<Box aria-hidden>
 									<Skeleton animation={pulse} width='70%' height={20} sx={sidebarSkeleton} />
@@ -1519,35 +1460,41 @@ export default function ManagementUI(/* props: Props */) {
 								{displayName}
 							</Typography>
 							{email && email !== displayName && (
-								<Typography noWrap sx={{ fontSize: 12, lineHeight: '16px', color: mgmtNeutral.muted }}>
+								<Typography noWrap sx={{ fontSize: 12, lineHeight: '16px', color: mgmtBrand.textSecondary }}>
 									{email}
 								</Typography>
 							)}
 						</Box>
+						{!inDrawer && (
+							<Tooltip title={logoutLabel()} placement='top'>
+								<IconButton onClick={handleLogout} aria-label={logoutLabel()} sx={sidebarIconButtonSx}>
+									<LogoutOutlinedIcon sx={{ fontSize: 20 }} />
+								</IconButton>
+							</Tooltip>
+						)}
 					</Box>
-					<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-						<ButtonBase
-							onClick={handleLogout}
-							aria-label={logoutLabel()}
-							sx={{
-								flexGrow: 1,
-								justifyContent: 'flex-start',
-								height: { xs: 44, md: 40 },
-								gap: 1.5,
-								px: 1.5,
-								borderRadius: `${mgmtShape.radius}px`,
-								color: mgmtNeutral.text,
-								fontSize: 14,
-								transition: mgmtTransition,
-								'&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink },
-								'&.Mui-focusVisible': focusRing(),
-								[shortScreen]: { flexGrow: 0, width: 40, px: 0, justifyContent: 'center', '& .label': { display: 'none' } },
-							}}
-						>
-							<LogoutOutlinedIcon sx={{ fontSize: 20 }} />
-							<span className='label'>{logoutLabel()}</span>
-						</ButtonBase>
-						{inDrawer && (
+					{inDrawer && (
+						<Box sx={{ display: 'flex', gap: 1 }}>
+							<ButtonBase
+								onClick={handleLogout}
+								sx={{
+									flexGrow: 1,
+									height: 44,
+									gap: 1.25,
+									px: 1.75,
+									justifyContent: 'flex-start',
+									border: `1px solid ${mgmtNeutral.line}`,
+									color: mgmtNeutral.text,
+									fontSize: 14,
+									fontWeight: 500,
+									transition: mgmtTransition,
+									'&:hover': { backgroundColor: mgmtNeutral.hover },
+									'&.Mui-focusVisible': focusRing(mgmtBrand.blue, 2, -2),
+								}}
+							>
+								<LogoutOutlinedIcon sx={{ fontSize: 18 }} />
+								{logoutLabel()}
+							</ButtonBase>
 							<ButtonBase
 								onClick={(e) => setLanguageAnchor(e.currentTarget)}
 								aria-label={selectLanguageLabel()}
@@ -1555,41 +1502,50 @@ export default function ManagementUI(/* props: Props */) {
 								sx={{
 									display: { xs: 'inline-flex', md: 'none' },
 									height: 44,
-									gap: 0.75,
-									px: 1.5,
-									borderRadius: `${mgmtShape.pill}px`,
+									gap: 1,
+									px: 1.75,
 									border: `1px solid ${mgmtNeutral.line}`,
-									bgcolor: mgmtNeutral.panel,
 									color: mgmtNeutral.text,
 									fontSize: 14,
+									fontWeight: 500,
 									'&:hover': { backgroundColor: mgmtNeutral.hover },
-									'&.Mui-focusVisible': focusRing(),
+									'&.Mui-focusVisible': focusRing(mgmtBrand.blue, 2, -2),
 								}}
 							>
 								<LanguageOutlinedIcon sx={{ fontSize: 18, color: mgmtBrand.blue }} />
 								{(localeList.find((l) => l.locale.includes(locale))?.locale[0] ?? 'en').toUpperCase()}
 							</ButtonBase>
-						)}
-					</Box>
+						</Box>
+					)}
 				</Box>
 			) : null}
 		</Box>
 	);
 
-	// Tablets (900–1199px), and desktops with the sidebar minimized: a 72px
-	// icon rail with tooltips (plan §3.4). The groups have no labels, only
+	// Tablets (900–1199px), and desktops with the sidebar minimized: a 64px
+	// icon rail with tooltips. The groups have no labels, only short
 	// hairlines between them.
+	const railButtonSx = {
+		...navItemSx,
+		width: 44,
+		minHeight: 44,
+		height: 44,
+		px: 0,
+		justifyContent: 'center',
+		'& .MuiSvgIcon-root': { fontSize: 20 },
+	} as const;
+
 	const rail = (
 		<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', color: mgmtNeutral.text }}>
-			<Box sx={{ width: '100%', height: mgmtLayout.headerHeight, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: { lg: `1px solid ${mgmtNeutral.line}` }, [shortScreen]: { height: mgmtLayout.headerHeightCompact } }}>
+			<Box sx={{ width: '100%', height: mgmtLayout.headerHeight, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: `1px solid ${mgmtNeutral.line}`, [shortScreen]: { height: mgmtLayout.headerHeightCompact } }}>
 				<Tooltip title={copy.home} placement='right'>
 					<Box
 						component={Link}
 						to='/'
 						aria-label={copy.home}
-						sx={{ width: 40, height: 40, borderRadius: `${mgmtShape.radius}px`, boxSizing: 'border-box', bgcolor: mgmtNeutral.panel, border: `1px solid ${mgmtNeutral.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', '&:focus-visible': focusRing() }}
+						sx={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', '&:focus-visible': focusRing() }}
 					>
-						<Box component='img' src={edumeetConfig.theme.logo} alt='' sx={{ height: 24, width: 28, objectFit: 'cover', objectPosition: 'left center' }} />
+						<Box component='img' src={edumeetConfig.theme.logo} alt='' sx={{ height: 26, width: 30, objectFit: 'cover', objectPosition: 'left center' }} />
 					</Box>
 				</Tooltip>
 			</Box>
@@ -1603,18 +1559,18 @@ export default function ManagementUI(/* props: Props */) {
 						aria-controls='mgmt-nav'
 						aria-expanded={false}
 						onClick={toggleNav}
-						sx={{ width: 40, height: 40, borderRadius: `${mgmtShape.radius}px`, color: mgmtNeutral.label, '&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink }, '&.Mui-focusVisible': focusRing() }}
+						sx={{ ...sidebarIconButtonSx, width: 44, height: 44 }}
 					>
-						<KeyboardDoubleArrowRightOutlinedIcon sx={{ fontSize: 20 }} />
+						<PanelIcon open={false} />
 					</IconButton>
 				</Tooltip>
 			</Box>
 			{signedIn && (
-				<Box component='ul' sx={{ listStyle: 'none', m: 0, p: 0, py: 1, flexGrow: 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+				<Box component='ul' sx={{ listStyle: 'none', m: 0, p: 0, py: 0.5, flexGrow: 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 					{!rightsKnown && <li>{navSkeleton(true)}</li>}
-					{(rightsKnown ? navGroups : []).map((g, gi) => (
+					{(rightsKnown ? navGroups : []).map((g) => (
 						<Box component='li' key={g.id} sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-							{gi > 0 && <Divider sx={{ width: 40, my: 0.75, borderColor: mgmtNeutral.line }} />}
+							<Divider aria-hidden sx={{ width: 28, my: 1, borderColor: mgmtNeutral.line }} />
 							<Box component='ul' aria-label={g.label} sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
 								{g.items.map((item) => {
 									const selected = item.key === selectedComponent;
@@ -1627,14 +1583,8 @@ export default function ManagementUI(/* props: Props */) {
 													aria-label={item.label}
 													aria-current={selected ? 'page' : undefined}
 													onClick={() => selectSection(item.key)}
-													sx={{
-														...navItemSx,
-														width: 48,
-														px: 0,
-														justifyContent: 'center',
-														'& .MuiSvgIcon-root': { fontSize: 22 },
-														'&.Mui-selected::before': { ...navItemSx['&.Mui-selected::before'], left: -12 },
-													}}
+													disableRipple
+													sx={railButtonSx}
 												>
 													<ListItemIcon><item.icon /></ListItemIcon>
 												</ListItemButton>
@@ -1648,15 +1598,14 @@ export default function ManagementUI(/* props: Props */) {
 				</Box>
 			)}
 			{signedIn && (
-				<Box sx={{ py: 1.5 }}>
+				<Box sx={{ width: '100%', py: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, borderTop: `1px solid ${mgmtNeutral.line}` }}>
 					<Tooltip title={logoutLabel()} placement='right'>
-						<IconButton
-							onClick={handleLogout}
-							aria-label={logoutLabel()}
-							sx={{ width: 44, height: 44, borderRadius: `${mgmtShape.itemRadius}px`, color: mgmtNeutral.text, '&:hover': { backgroundColor: mgmtNeutral.hover, color: mgmtNeutral.ink }, '&.Mui-focusVisible': focusRing() }}
-						>
+						<IconButton onClick={handleLogout} aria-label={logoutLabel()} sx={{ ...sidebarIconButtonSx, width: 44, height: 44 }}>
 							<LogoutOutlinedIcon sx={{ fontSize: 20 }} />
 						</IconButton>
+					</Tooltip>
+					<Tooltip title={displayName} placement='right'>
+						{avatarNode(36, false, true)}
 					</Tooltip>
 				</Box>
 			)}
@@ -1813,6 +1762,36 @@ export default function ManagementUI(/* props: Props */) {
 						<BrandMark size='sm' onNavy />
 					</Box>
 
+					{/* Back to the dashboard from any section (user request
+					    2026-10-13); phones get it above the content instead. */}
+					{signedIn && selectedComponent !== '' && (
+						<>
+							<ButtonBase
+								onClick={() => selectSection('')}
+								sx={{
+									display: { xs: 'none', md: 'inline-flex' },
+									flexShrink: 0,
+									height: 40,
+									gap: 1,
+									pl: 1.25,
+									pr: 1.75,
+									border: `1px solid ${mgmtBrand.border}`,
+									bgcolor: mgmtBrand.white,
+									color: mgmtBrand.navy,
+									fontSize: 14,
+									fontWeight: 600,
+									transition: mgmtTransition,
+									'&:hover': { bgcolor: mgmtBrand.blueLight },
+									'&.Mui-focusVisible': focusRing(),
+								}}
+							>
+								<ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />
+								{copy.back}
+							</ButtonBase>
+							<Box aria-hidden sx={{ display: { xs: 'none', md: 'block' }, width: '1px', height: 32, flexShrink: 0, bgcolor: mgmtBrand.border }} />
+						</>
+					)}
+
 					{/* One h1 on every screen: on phones it is only read out, the
 					    brand mark and the content breadcrumb show instead. */}
 					<Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, '@media (max-width: 899.95px)': visuallyHidden }}>
@@ -1875,12 +1854,24 @@ export default function ManagementUI(/* props: Props */) {
 					aria-busy={loading || undefined}
 					sx={{ flexGrow: 1, width: '100%', maxWidth: mgmtLayout.contentMaxWidth, mx: 'auto', p: { xs: 2, md: 3, lg: '28px 32px' }, '&:focus': { outline: 'none' } }}
 				>
-					{signedIn && (
+					{signedIn && selectedComponent !== '' && (
+						<ButtonBase
+							onClick={() => selectSection('')}
+							sx={{ display: { xs: 'inline-flex', md: 'none' }, height: 44, gap: 1, pl: 1.25, pr: 1.75, mb: 1.5, border: `1px solid ${mgmtBrand.border}`, bgcolor: mgmtBrand.white, color: mgmtBrand.navy, fontSize: 15, fontWeight: 600, '&.Mui-focusVisible': focusRing() }}
+						>
+							<ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />
+							{copy.back}
+						</ButtonBase>
+					)}
+					{signedIn && selectedComponent === '' && (
 						<Typography noWrap sx={{ display: { xs: 'block', md: 'none' }, ...mgmtType.caption, color: mgmtBrand.textSecondary, mb: 1.5 }}>
 							{[ ...breadcrumb, pageTitle ].join(' › ')}
 						</Typography>
 					)}
-					{loading ? contentSkeleton : renderComponent()}
+					{loading ? contentSkeleton : (
+						// Each section fades and rises in when it opens (2026-10-18).
+						<Box key={selectedComponent || 'dashboard'} sx={sectionEnterSx}>{renderComponent()}</Box>
+					)}
 				</Box>
 			</Box>
 		</Box>
@@ -1946,92 +1937,66 @@ export default function ManagementUI(/* props: Props */) {
 		</>
 	);
 
-	// Signed out (plan §4.3, §7.4–§7.4c): a full-screen hero on the neutral
-	// ground with a dot grid. From 900px: the text and the animated admin
-	// mockup in the left 7 columns, the sign-in card alone in the right 5;
-	// nothing overlaps. Below 900px the mockup is hidden and the text sits
-	// above the card. No logo and no "Admin" tag (user request).
+	// Signed out: a plain neutral page with the language picker top right and
+	// one centred sign-in card. The card is pinned near the top (not centred
+	// vertically) so switching tabs only grows it downwards.
 	const signInScreen = (
 		<Box
-			component='section'
+			component='main'
 			aria-labelledby='mgmt-signin-title'
 			sx={{
 				minHeight: '100vh',
 				boxSizing: 'border-box',
 				display: 'flex',
-				alignItems: 'center',
+				flexDirection: 'column',
 				bgcolor: mgmtNeutral.bg,
-				backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
-				backgroundSize: '24px 24px',
 				color: mgmtNeutral.ink,
-				px: { xs: 2, sm: 3, lg: 4 },
-				py: { xs: 4, md: 6 },
-				[shortScreen]: { py: 3 },
+				px: { xs: 2, sm: 3 },
+				pt: { xs: 2, sm: 3 },
+				pb: 4,
 			}}
 		>
+			<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+				<ButtonBase
+					onClick={(e) => setLanguageAnchor(e.currentTarget)}
+					aria-label={selectLanguageLabel()}
+					aria-haspopup='menu'
+					aria-expanded={Boolean(languageAnchor)}
+					sx={{
+						height: { xs: 44, md: 40 },
+						gap: 1,
+						pl: 1.25,
+						pr: 1.5,
+						borderRadius: `${mgmtShape.pill}px`,
+						border: `1px solid ${mgmtNeutral.line}`,
+						bgcolor: mgmtNeutral.panel,
+						color: mgmtNeutral.text,
+						fontSize: 14,
+						transition: mgmtTransition,
+						'&:hover': { bgcolor: mgmtNeutral.hover },
+						'&.Mui-focusVisible': focusRing(),
+					}}
+				>
+					<LanguageOutlinedIcon sx={{ fontSize: 18, color: mgmtBrand.blue }} />
+					{languageName}
+					<ExpandMoreOutlinedIcon sx={{ fontSize: 16, color: mgmtNeutral.label }} />
+				</ButtonBase>
+			</Box>
 			<Box
 				sx={{
-					width: '100%',
-					maxWidth: 1200,
-					mx: 'auto',
-					display: 'grid',
-					gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(12, minmax(0, 1fr))' },
-					columnGap: { md: 4, lg: 6 },
-					rowGap: { xs: 3, sm: 4 },
+					flex: 1,
+					display: 'flex',
+					flexDirection: 'column',
 					alignItems: 'center',
+					gap: 3,
+					pt: { xs: 3, sm: 'clamp(16px, 8vh, 88px)' },
+					[shortScreen]: { pt: 1, gap: 2 },
 				}}
 			>
-				<Box sx={{ gridColumn: { md: '1 / span 7' }, display: 'flex', flexDirection: 'column', gap: 5, [shortScreen]: { gap: 3 } }}>
-					<Box sx={{ maxWidth: { xs: 560, md: 580 }, mx: { xs: 'auto', md: 0 }, textAlign: { xs: 'center', md: 'left' } }}>
-						<Typography sx={{ color: mgmtNeutral.muted, fontWeight: 500, fontSize: { xs: 13, md: 15 }, lineHeight: 1.5, mb: 2 }}>
-							{copy.heroEyebrow}
-						</Typography>
-						<Typography
-							id='mgmt-signin-title'
-							component='h1'
-							sx={{ m: 0, color: mgmtNeutral.ink, fontSize: 'clamp(1.75rem, 1.1rem + 2vw, 3rem)', lineHeight: 1.12, fontWeight: 700, letterSpacing: '-0.01em' }}
-						>
-							{copy.heroTitle}
-						</Typography>
-						<Box aria-hidden sx={{ width: 56, height: 4, borderRadius: `${mgmtShape.pill}px`, bgcolor: mgmtBrand.orange, my: { xs: 2, md: 3 }, mx: { xs: 'auto', md: 0 }, [shortScreen]: { my: 2 } }} />
-						<Typography sx={{ m: 0, fontSize: { xs: 16, md: 18 }, lineHeight: 1.6, color: mgmtNeutral.text, maxWidth: 520, mx: { xs: 'auto', md: 0 } }}>
-							{copy.heroSubtitle}
-						</Typography>
-					</Box>
-					<Box sx={{ display: { xs: 'none', md: 'block' } }}>
-						<AdminMock />
-					</Box>
-				</Box>
-
-				<Box sx={{ gridColumn: { md: '8 / span 5' }, justifySelf: { xs: 'center', md: 'end' }, width: { xs: 'min(420px, 100%)', md: 'min(420px, 100%)' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5, [shortScreen]: { gap: 2 } }}>
-					<Box sx={{ ...signInCardSx, width: '100%' }}>
-						<SignIn />
-					</Box>
-					<ButtonBase
-						onClick={(e) => setLanguageAnchor(e.currentTarget)}
-						aria-label={selectLanguageLabel()}
-						aria-haspopup='menu'
-						aria-expanded={Boolean(languageAnchor)}
-						sx={{
-							height: { xs: 44, md: 40 },
-							gap: 1,
-							pl: 1.25,
-							pr: 1.5,
-							borderRadius: `${mgmtShape.pill}px`,
-							border: `1px solid ${mgmtNeutral.line}`,
-							bgcolor: mgmtNeutral.panel,
-							color: mgmtNeutral.text,
-							fontSize: 14,
-							transition: mgmtTransition,
-							'&:hover': { bgcolor: mgmtNeutral.hover },
-							'&.Mui-focusVisible': focusRing(),
-						}}
-					>
-						<LanguageOutlinedIcon sx={{ fontSize: 18, color: mgmtBrand.blue }} />
-						{languageName}
-						<ExpandMoreOutlinedIcon sx={{ fontSize: 16, color: mgmtNeutral.label }} />
-					</ButtonBase>
-				</Box>
+				<SignInCard />
+				<Typography sx={{ m: 0, fontSize: 12, lineHeight: '16px', color: mgmtNeutral.label, textAlign: 'center' }}>
+					{copy.footerNote}
+				</Typography>
 			</Box>
 		</Box>
 	);

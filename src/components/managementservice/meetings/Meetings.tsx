@@ -31,6 +31,7 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { localeList } from '../../../utils/intlManager';
 import { browserTimezone, instantToWallClock, timezoneOptions, wallClockToInstant } from '../../../utils/timezones';
 import { toMomentLocale } from '../../../utils/momentLocale';
+import { switchSx } from '../tenants/tenantShared';
 import {
 	createData,
 	deleteData,
@@ -566,7 +567,7 @@ const MeetingsTable = ({ roomId: roomIdProp, tenantId: tenantIdProp }: MeetingsT
 						{addNewLabel()}
 					</Button>
 					<FormControlLabel
-						control={<Switch checked={showPastMeetings} onChange={(e) => setShowPastMeetings(e.target.checked)} />}
+						control={<Switch checked={showPastMeetings} onChange={(e) => setShowPastMeetings(e.target.checked)} sx={{ ...switchSx, mx: 1.25 }} />}
 						label={showPastMeetingsLabel()}
 					/>
 				</Box>

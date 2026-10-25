@@ -413,7 +413,9 @@ export type User = {
 	avatar: string,
 	roles: [],
 	tenantAdmin: boolean,
-	tenantOwner: boolean
+	tenantOwner: boolean,
+	// Milliseconds since 1970; empty for users made before the column existed.
+	createdAt?: number | null
 };
 export type UserTypes = Array<User>;
 
