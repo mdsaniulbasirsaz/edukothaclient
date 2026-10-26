@@ -17,7 +17,6 @@ import {
 	Drawer,
 	IconButton,
 	Link,
-	InputAdornment,
 	Menu,
 	MenuItem,
 	Slide,
@@ -37,7 +36,6 @@ import AccountCircleRounded from '@mui/icons-material/AccountCircleRounded';
 import AccountBalanceRounded from '@mui/icons-material/AccountBalanceRounded';
 import AppsRounded from '@mui/icons-material/AppsRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
-import AutorenewRounded from '@mui/icons-material/AutorenewRounded';
 import BarChartRounded from '@mui/icons-material/BarChartRounded';
 import BusinessCenterRounded from '@mui/icons-material/BusinessCenterRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
@@ -321,7 +319,6 @@ const strings = {
 		close: 'Close',
 		join: 'Join',
 		startNew: 'Start new class',
-		newName: 'New room name',
 		linkLabel: 'Meeting link',
 		linkCopied: 'Link copied',
 		copyFailed: 'Couldn\'t copy the link. Select it and copy it by hand.',
@@ -1998,7 +1995,6 @@ type QuickJoinProps = {
 	view: QuickJoinView;
 	onViewChange: React.Dispatch<QuickJoinView>;
 	onClose: () => void;
-	randomizeOnBlank: boolean;
 	qrCodeEnabled: boolean;
 	privacyUrl: string;
 	onToast: React.Dispatch<string>;
@@ -2006,10 +2002,11 @@ type QuickJoinProps = {
 	preferMyRooms: boolean;
 };
 
-const QuickJoinDialog = ({ open, view, onViewChange, onClose, randomizeOnBlank, qrCodeEnabled, privacyUrl, onToast, rooms, preferMyRooms }: QuickJoinProps): React.JSX.Element => {
+const QuickJoinDialog = ({ open, view, onViewChange, onClose, qrCodeEnabled, privacyUrl, onToast, rooms, preferMyRooms }: QuickJoinProps): React.JSX.Element => {
 	const navigate = useNavigate();
 	const phone = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
-	const [ room, setRoom ] = useState(randomRoomName);
+	// Starts empty: the user types or pastes the room name (no random fill-in).
+	const [ room, setRoom ] = useState('');
 	const [ notice, setNotice ] = useState<string | null>(null);
 	const [ announcement, setAnnouncement ] = useState('');
 	const [ joining, setJoining ] = useState(false);
@@ -2038,11 +2035,6 @@ const QuickJoinDialog = ({ open, view, onViewChange, onClose, randomizeOnBlank, 
 	useEffect(() => {
 		if (open) prefetchApp();
 	}, [ open ]);
-
-	// The Host view always starts with a fresh room.
-	useEffect(() => {
-		if (open && host) setRoom(randomRoomName());
-	}, [ open, host ]);
 
 	// Account menu → My rooms opens the dialog on the room list.
 	useEffect(() => {
@@ -2234,9 +2226,6 @@ const QuickJoinDialog = ({ open, view, onViewChange, onClose, randomizeOnBlank, 
 					error={Boolean(error)}
 					onChange={(event) => setRoom(event.target.value.toLowerCase())}
 					onPaste={onPaste}
-					onBlur={() => {
-						if (randomizeOnBlank && room.trim() === '') setRoom(randomRoomName());
-					}}
 					onKeyDown={(event) => {
 						if (event.key === 'Enter') join(room);
 					}}
@@ -2252,21 +2241,6 @@ const QuickJoinDialog = ({ open, view, onViewChange, onClose, randomizeOnBlank, 
 						},
 						input: {
 							sx: { height: 52, fontFamily: '\'Roboto Mono\', ui-monospace, monospace', borderRadius: radius.md },
-							endAdornment: (
-								<InputAdornment position='end'>
-									<IconButton
-										aria-label={strings.quickJoin.newName}
-										edge='end'
-										onClick={() => {
-											setRoom(randomRoomName());
-											inputRef.current?.focus();
-										}}
-										sx={{ width: 44, height: 44, color: brand.blueDark, ...focusRing() }}
-									>
-										<AutorenewRounded />
-									</IconButton>
-								</InputAdornment>
-							),
 						},
 					}}
 				/>
@@ -4122,7 +4096,6 @@ const HomePage = (): React.JSX.Element | null => {
 
 	const config = {
 		transcriptionEnabled: edumeetConfig.transcriptionEnabled,
-		randomizeOnBlank: edumeetConfig.randomizeOnBlank,
 		qrCodeEnabled: edumeetConfig.qrCodeEnabled,
 		myRoomsTabEnabled: edumeetConfig.myRoomsTabEnabled,
 		myMeetingsTabEnabled: edumeetConfig.myMeetingsTabEnabled,
@@ -4486,7 +4459,6 @@ const HomePage = (): React.JSX.Element | null => {
 					view={quickJoinView ?? lastView}
 					onViewChange={changeQuickJoinView}
 					onClose={closeQuickJoin}
-					randomizeOnBlank={config.randomizeOnBlank}
 					qrCodeEnabled={config.qrCodeEnabled}
 					privacyUrl={config.privacyUrl}
 					onToast={setToast}

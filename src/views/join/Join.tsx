@@ -1,27 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Button, Box, CircularProgress, Link, Tooltip, Typography } from '@mui/material';
-import { ThemeProvider, alpha, createTheme, styled, Theme } from '@mui/material/styles';
-import TextInputField from '../../components/textinputfield/TextInputField';
-import { useAppDispatch, useAppSelector, useNotifier } from '../../store/hooks';
-import { joinLabel, yourNameLabel, imprintLabel, joinConsentLabel, privacyPolicyLabel, meetingTokenLabel, meetingTokenInvalidLabel, meetingTokenRequiredLabel, copyRoomLabel, copiedRoomLabel } from '../../components/translated/translatedComponents';
-import { ArrowForward, Check, ContentCopy, KeyOutlined, Lock, PersonOutlined } from '@mui/icons-material';
-import { intl } from '../../utils/intlManager';
+import { Button, Box, CircularProgress, IconButton, InputAdornment, Link, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
+import { ThemeProvider, alpha, createTheme, styled } from '@mui/material/styles';
+import type { SvgIconComponent } from '@mui/icons-material';
+import { useAppDispatch, useAppSelector, useDeviceSelector, useNotifier } from '../../store/hooks';
+import { joinLabel, yourNameLabel, imprintLabel, joinConsentLabel, privacyPolicyLabel, meetingTokenLabel, meetingTokenInvalidLabel, meetingTokenRequiredLabel, copyRoomLabel, copiedRoomLabel, backgroundBlurLabel, selectVideoBackgroundLabel, selectLanguageLabel, loginLabel, logoutLabel } from '../../components/translated/translatedComponents';
+import { ArrowForward, BlurOff, BlurOn, Check, ContentCopy, HideImageOutlined, ImageOutlined, KeyOutlined, LanguageOutlined, Lock, LoginOutlined, LogoutOutlined, MicNoneOutlined, PersonOutlined, VideocamOutlined, VolumeUpOutlined } from '@mui/icons-material';
+import { intl, localeList } from '../../utils/intlManager';
 import MediaPreview from '../../components/mediapreview/MediaPreview';
+import MicPreviewButton from '../../components/controlbuttons/MicPreviewButton';
+import WebcamPreviewButton from '../../components/controlbuttons/WebcamPreviewButton';
+import MeetingsButton from '../../components/controlbuttons/MeetingsButton';
 import AudioInputChooser from '../../components/devicechooser/AudioInputChooser';
 import VideoInputChooser from '../../components/devicechooser/VideoInputChooser';
-import GenericDialog from '../../components/genericdialog/GenericDialog';
 import { roomActions } from '../../store/slices/roomSlice';
 import settingsSlice, { settingsActions } from '../../store/slices/settingsSlice';
+import { uiActions } from '../../store/slices/uiSlice';
 import { botDisplayName, botJobIdFromUrl, botSessionFromUrl, botTokenFromUrl, botTypeFromUrl, HEADLESS_PRESET, headlessFromUrl, headlessJoinPlan, hrefWithoutBotToken, layoutSettingsActions } from '../../utils/headless';
 import { JOIN_ERROR_KEY } from '../../store/middlewares/roomMiddleware';
 import { connect } from '../../store/actions/roomActions';
-import PrecallTitle from '../../components/precalltitle/PrecallTitle';
-import { ChooserDiv } from '../../components/devicechooser/DeviceChooser';
+import { updateVideoSettings } from '../../store/actions/mediaActions';
+import { checkJWT, login, logout } from '../../store/actions/permissionsActions';
+import { setLocale } from '../../store/actions/localeActions';
 import { meActions } from '../../store/slices/meSlice';
 import AudioOutputChooser from '../../components/devicechooser/AudioOutputChooser';
 import { canSelectAudioOutput } from '../../store/selectors';
 import edumeetConfig from '../../utils/edumeetConfig';
-import { MAX_DISPLAY_NAME_LENGTH } from '../../utils/types';
+import { BackgroundType, MAX_DISPLAY_NAME_LENGTH } from '../../utils/types';
 import { meetingTokenFromUrl, normalizeMeetingToken, takeMeetingTokenRejection } from '../../utils/meetingToken';
 import { notificationsActions } from '../../store/slices/notificationsSlice';
 
@@ -54,9 +58,14 @@ const joinBrand = {
 	errorLight: '#fdecec',
 	errorBorder: '#f5c2c2',
 	errorText: '#8e1b1b',
+	pageBg: '#f4f7fb',
+	line: '#e2e8f0',
+	labelText: '#33445c',
 } as const;
 
-const joinStage = `radial-gradient(900px 520px at 18% 12%, ${joinBrand.navyLight} 0%, ${alpha(joinBrand.navyLight, 0)} 70%), linear-gradient(160deg, ${joinBrand.navy} 0%, ${joinBrand.navyDeep} 100%)`;
+// Design A (canvas "Room Preview Redesign", 2026-10-25): a white card with a
+// white header on a plain light-grey page.
+const joinStage = joinBrand.pageBg;
 
 // A background image from the room, the user or the config stays visible
 // under a navy tint instead of being covered.
@@ -99,133 +108,11 @@ const makeJoinTheme = (overImage: boolean) => createTheme(edumeetConfig.theme, {
 		text: { primary: joinBrand.navy, secondary: joinBrand.textSecondary },
 	},
 	background: overImage ? joinStageOverImage : joinStage,
-	precallTitleColor: joinBrand.navy,
-	precallTitleTextColor: joinBrand.white,
-	precallTitleIconColor: joinBrand.white,
+	precallTitleColor: joinBrand.white,
+	precallTitleTextColor: joinBrand.navy,
+	precallTitleIconColor: joinBrand.navy,
 	roundedness: 12,
 	components: {
-		// The dialog backdrop is the Join page's background. The card is wider
-		// than MUI's md (900px), always leaves room around it so the page
-		// never scrolls sideways, and goes full screen on phones.
-		MuiDialog: {
-			styleOverrides: {
-				backdrop: { background: overImage ? joinStageOverImage : joinStage },
-				container: { [tabletTall]: { alignItems: 'flex-start' } },
-				paper: ({ theme }: { theme: Theme }) => ({
-					borderRadius: 20,
-					boxShadow: `0 24px 60px ${alpha(joinBrand.navy, 0.35)}`,
-					'&.MuiDialog-paperWidthMd': { maxWidth: 'min(1080px, calc(100% - 64px))' },
-					// Header: 64px, padded 0 16 0 24 (56px on phones), with no inner
-					// padding on PrecallTitle, which GenericDialog pads a second time.
-					'& .MuiDialogTitle-root': {
-						height: 64,
-						boxSizing: 'border-box',
-						padding: '0 16px 0 24px',
-						display: 'flex',
-						alignItems: 'center',
-						[theme.breakpoints.down('sm')]: { height: 56, padding: '0 6px 0 16px' },
-						[narrowPhone]: { padding: '0 4px 0 12px' },
-						[tabletTall]: { padding: '0 12px 0 20px' },
-					},
-					'& .MuiDialogTitle-root > .MuiBox-root, & .MuiDialogTitle-root .MuiGrid-container': { width: '100%' },
-					'& .MuiDialogTitle-root .MuiGrid-container': { padding: 0, borderRadius: 0 },
-					// The bottom strip (About us · Press Enter to join) is the actions row
-					// right after the content; with the info footer under it, 4px below.
-					'& .MuiDialogContent-root + .MuiDialogActions-root': {
-						padding: '10px 24px',
-						'&:has(+ .MuiDialogActions-root)': { paddingBottom: 4 },
-						borderTop: `1px solid ${joinBrand.divider}`,
-						[theme.breakpoints.down('sm')]: { display: 'none' },
-						[theme.breakpoints.between('sm', 'md')]: { '&:has([data-strip=enter-only])': { display: 'none' } },
-						[shortScreen]: { display: 'none' },
-					},
-					// GenericDialog always renders the actions row; hide it when empty.
-					'& .MuiDialogActions-root:empty': { display: 'none' },
-					// GenericDialog's info footer (infoTooltip*) is its second actions row:
-					// a 13px link over a 12px description, as drawn.
-					'& .MuiDialogActions-root + .MuiDialogActions-root': {
-						padding: '4px 24px 16px',
-						border: 0,
-						'& .MuiGrid-container > *': { fontSize: 12, color: joinBrand.textSecondary },
-						'& a': {
-							fontSize: 13,
-							fontWeight: 500,
-							display: 'inline-flex',
-							alignItems: 'center',
-							gap: 6,
-							'&::before': {
-								content: '""',
-								width: 16,
-								height: 16,
-								backgroundColor: 'currentColor',
-								mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cpath d=\'M12 16v-4M12 8h.01\'/%3E%3C/svg%3E") center / contain no-repeat',
-							},
-						},
-					},
-					// Short screens: the footer becomes one quiet line (about 36px instead
-					// of 70), the header is 56px and the margins shrink, so the card fits.
-					[shortScreen]: {
-						'& .MuiDialogActions-root + .MuiDialogActions-root': {
-							padding: '8px 24px 12px',
-							borderTop: `1px solid ${joinBrand.border}`,
-							'& .MuiGrid-container': {
-								display: 'flex',
-								flexWrap: 'nowrap',
-								alignItems: 'baseline',
-								justifyContent: 'center',
-								gap: 8,
-								minWidth: 0,
-							},
-							'& .MuiGrid-container > *': {
-								width: 'auto',
-								flex: '0 1 auto',
-								minWidth: 0,
-								textAlign: 'left !important',
-								fontSize: 12.5,
-								color: joinBrand.textSecondary,
-							},
-							'& .MuiGrid-container > *:last-of-type': {
-								overflow: 'hidden',
-								textOverflow: 'ellipsis',
-								whiteSpace: 'nowrap',
-							},
-							'& a': { fontSize: 12.5, fontWeight: 500 },
-						},
-						margin: 12,
-						maxHeight: 'calc(100% - 24px)',
-						'&.MuiDialog-paperWidthMd': { maxWidth: 'min(1080px, calc(100% - 24px))' },
-						'& .MuiDialogTitle-root': { height: 56 },
-					},
-					// The dialog's own Fade does the opacity; this adds a 12px rise.
-					'@keyframes joinCardRise': {
-						from: { transform: 'translateY(12px)' },
-						to: { transform: 'none' },
-					},
-					animation: 'joinCardRise 240ms ease-out',
-					...noMotion,
-					[tabletTall]: {
-						margin: '40px 0',
-						'&.MuiDialog-paperWidthMd': { maxWidth: 640 },
-					},
-					[theme.breakpoints.down('sm')]: {
-						margin: 0,
-						width: '100%',
-						maxWidth: '100%',
-						height: '100%',
-						maxHeight: '100%',
-						borderRadius: 0,
-						'&.MuiDialog-paperWidthMd': { maxWidth: '100%' },
-					},
-				}),
-			},
-		},
-		// Nothing in the card is wider than its column, so a sideways
-		// scrollbar would only ever come from a rounding error.
-		MuiDialogContent: {
-			styleOverrides: {
-				root: { overflowX: 'hidden' },
-			},
-		},
 		// A visible keyboard focus ring on every button, icon button and chip.
 		MuiButtonBase: {
 			styleOverrides: {
@@ -405,14 +292,72 @@ const visuallyHiddenSx = {
 	whiteSpace: 'nowrap',
 } as const;
 
+// The orange Join button. Joining keeps the orange, so it reads as busy
+// rather than unavailable.
+const joinButtonSx = (busy: boolean) => ({
+	height: 54,
+	borderRadius: '12px',
+	fontSize: 17,
+	fontWeight: 700,
+	letterSpacing: '0.3px',
+	// MUI uppercases buttons; the design says "Join".
+	textTransform: 'none',
+	boxShadow: `0 8px 20px ${alpha(joinBrand.orange, 0.35)}`,
+	transition: 'background-color 150ms, box-shadow 150ms, transform 150ms',
+	// 10px between the label and the 20px icons.
+	'& .MuiButton-endIcon': { m: '0 0 0 10px', transition: 'transform 150ms' },
+	'& .MuiButton-startIcon': { m: '0 10px 0 0' },
+	'& .MuiButton-endIcon .MuiSvgIcon-root': { fontSize: 20 },
+	'&:hover': {
+		transform: 'translateY(-1px)',
+		boxShadow: `0 10px 24px ${alpha(joinBrand.orange, 0.45)}`,
+	},
+	// Less room under the button on short screens, so a tighter shadow.
+	[shortScreen]: { height: 50, boxShadow: `0 6px 14px ${alpha(joinBrand.orange, 0.3)}` },
+	'&:hover .MuiButton-endIcon': { transform: 'translateX(4px)' },
+	'&:active': {
+		backgroundColor: joinBrand.orangePressed,
+		transform: 'none',
+		boxShadow: 'none',
+	},
+	'&.Mui-focusVisible': {
+		...focusRing(joinBrand.navy, 3, 2),
+		boxShadow: `0 0 0 8px ${joinBrand.orangeLight}`,
+	},
+	// Joining keeps the orange, so it reads as busy rather than unavailable.
+	'&.Mui-disabled': busy ? {
+		backgroundColor: joinBrand.orange,
+		color: joinBrand.navy,
+		boxShadow: 'none',
+	} : {
+		backgroundColor: joinBrand.orangeDisabled,
+		color: joinBrand.orangeDisabledText,
+		boxShadow: 'none',
+	},
+	'@media (prefers-reduced-motion: reduce)': {
+		transition: 'none',
+		'&:hover, &:hover .MuiButton-endIcon': { transform: 'none' },
+	},
+});
+
+// Name and token fields: label above (design A), 52px, 12px corners.
+const inputSx = {
+	'& .MuiOutlinedInput-root': { height: 52, borderRadius: '12px', bgcolor: joinBrand.white, fontSize: 16 },
+	'& .MuiOutlinedInput-notchedOutline': { borderColor: joinBrand.textDisabled },
+	'& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: joinBrand.error, borderWidth: 2 },
+	'& .MuiInputAdornment-root .MuiSvgIcon-root': { fontSize: 20 },
+	[shortScreen]: { '& .MuiOutlinedInput-root': { height: 46 } },
+} as const;
+
 const JoinHeading = ({ compact }: { compact?: boolean }): React.JSX.Element => (
 	<Box>
 		<Typography
 			component='h1'
 			sx={{
 				m: 0,
-				fontSize: { xs: 24, md: 28 },
-				lineHeight: { xs: '30px', md: '34px' },
+				fontSize: { xs: 24, md: 32 },
+				lineHeight: { xs: '30px', md: '40px' },
+				letterSpacing: { md: '-0.01em' },
 				fontWeight: 700,
 				color: joinBrand.navy,
 				[narrowPhone]: { fontSize: 22, lineHeight: '28px' },
@@ -457,73 +402,58 @@ const RoomChip = ({ roomId, hideCopy }: { roomId: string; hideCopy?: boolean }):
 	const copyText = copied ? copiedRoomLabel() : copyRoomLabel();
 
 	return (
-		<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, [tabletTall]: { gridArea: 'room' } }}>
-			<Box sx={{
-				height: { xs: 44, md: 36 },
-				flexGrow: { xs: 1, md: 0 },
+		// Design A: one bordered box, "Room cse-341" on the left and a quiet
+		// Copy link button on the right.
+		<Box sx={{
+			gridArea: 'room',
+			display: 'flex',
+			alignItems: 'center',
+			gap: 1,
+			minWidth: 0,
+			minHeight: { xs: 48, md: 46 },
+			boxSizing: 'border-box',
+			p: '6px 6px 6px 14px',
+			border: `1px solid ${joinBrand.border}`,
+			borderRadius: '12px',
+			bgcolor: joinBrand.surfaceSubtle,
+			[shortScreen]: { minHeight: 40, py: '3px' },
+		}}>
+			<Typography component='span' sx={{ flexShrink: 0, fontSize: 12.5, fontWeight: 500, color: joinBrand.textSecondary }}>
+				{ joinRoomChipLabel() }
+			</Typography>
+			<Typography component='span' sx={{
 				minWidth: 0,
-				boxSizing: 'border-box',
-				pl: 1.5,
-				pr: { xs: 1.5, md: 1.75 },
-				[tabletTall]: { height: 36, flexGrow: 0, pr: 1.75 },
-				borderRadius: 999,
-				bgcolor: joinBrand.blueLight,
-				display: 'flex',
-				alignItems: 'center',
-				gap: 1.25,
+				fontFamily: '\'Roboto Mono\', ui-monospace, monospace',
+				fontSize: 15,
+				fontWeight: 700,
+				color: joinBrand.navy,
+				overflow: 'hidden',
+				textOverflow: 'ellipsis',
+				whiteSpace: 'nowrap',
 			}}>
-				<Box aria-hidden sx={{
-					width: 8,
-					height: 8,
-					flexShrink: 0,
-					borderRadius: 999,
-					bgcolor: joinBrand.blue,
-					'@keyframes joinRoomPulse': {
-						'0%': { boxShadow: `0 0 0 0 ${alpha(joinBrand.blue, 0.55)}` },
-						'70%': { boxShadow: `0 0 0 8px ${alpha(joinBrand.blue, 0)}` },
-						'100%': { boxShadow: `0 0 0 0 ${alpha(joinBrand.blue, 0)}` },
-					},
-					animation: 'joinRoomPulse 2s infinite',
-					...noMotion,
-				}} />
-				<Typography component='span' sx={{ fontSize: 13, fontWeight: 500, color: joinBrand.textSecondary }}>
-					{ joinRoomChipLabel() }
-				</Typography>
-				<Typography component='span' sx={{
-					fontFamily: '\'Roboto Mono\', ui-monospace, monospace',
-					fontSize: 14,
-					fontWeight: 500,
-					color: joinBrand.navy,
-					overflow: 'hidden',
-					textOverflow: 'ellipsis',
-					whiteSpace: 'nowrap',
-				}}>
-					{ roomId }
-				</Typography>
-			</Box>
-			{/* Text pill from md up, icon button below. Hidden while joining. */}
+				{ roomId }
+			</Typography>
+			{/* Text button from md up, icon button below. Hidden while joining. */}
 			{ !hideCopy && <Button
 				onClick={handleCopy}
-				variant='outlined'
 				aria-label={copyText}
 				startIcon={copied ? <Check /> : <ContentCopy />}
 				sx={{
-					height: { xs: 44, md: 36 },
-					minWidth: { xs: 44, md: 0 },
+					ml: 'auto',
+					height: { xs: 36, md: 34 },
+					minWidth: { xs: 36, md: 0 },
 					flexShrink: 0,
-					px: { xs: 0, md: 1.5 },
-					borderRadius: 999,
+					px: { xs: 0, md: 1.25 },
+					borderRadius: '8px',
 					textTransform: 'none',
 					letterSpacing: 0,
 					fontSize: 13,
 					fontWeight: 500,
-					[tabletTall]: { height: 36, minWidth: 36, '& .MuiSvgIcon-root': { fontSize: 16 } },
-					'& .MuiSvgIcon-root': { fontSize: { xs: 18, md: 16 } },
-					bgcolor: copied ? joinBrand.successLight : joinBrand.white,
+					'& .MuiSvgIcon-root': { fontSize: 16 },
 					color: copied ? joinBrand.successText : joinBrand.blueDark,
-					borderColor: copied ? joinBrand.success : joinBrand.border,
+					bgcolor: copied ? joinBrand.successLight : 'transparent',
 					'& .MuiButton-startIcon': { m: { xs: 0, md: '0 6px 0 0' } },
-					'&:hover': { borderColor: copied ? joinBrand.success : joinBrand.blue, bgcolor: copied ? joinBrand.successLight : joinBrand.surfaceSubtle },
+					'&:hover': { bgcolor: copied ? joinBrand.successLight : joinBrand.blueLight },
 				}}
 			>
 				<Box component='span' sx={{ display: { xs: 'none', md: 'inline' } }}>{ copyText }</Box>
@@ -556,21 +486,19 @@ type DeviceStatus = 'ready' | 'off' | 'starting';
 
 const StatusChip = ({ status, label }: { status: DeviceStatus; label: string }): React.JSX.Element => (
 	<Box sx={{
-		height: 32,
+		height: 28,
 		boxSizing: 'border-box',
-		px: 1.5,
+		px: 1.25,
 		borderRadius: 999,
-		border: '1px solid',
-		borderColor: status === 'off' ? joinBrand.errorBorder : joinBrand.border,
-		bgcolor: status === 'off' ? joinBrand.errorLight : joinBrand.surfaceSubtle,
-		color: status === 'off' ? joinBrand.errorText : status === 'starting' ? joinBrand.textSecondary : joinBrand.navy,
+		bgcolor: status === 'off' ? joinBrand.errorLight : status === 'starting' ? joinBrand.surfaceSubtle : joinBrand.successLight,
+		color: status === 'off' ? joinBrand.errorText : status === 'starting' ? joinBrand.textSecondary : joinBrand.successText,
 		display: 'flex',
 		alignItems: 'center',
-		gap: 1,
+		gap: 0.75,
 		fontSize: 13,
 		fontWeight: 500,
 		whiteSpace: 'nowrap',
-		[narrowPhone]: { height: 30, px: 1.25, gap: 0.75, fontSize: 12.5 },
+		[narrowPhone]: { px: 1, fontSize: 12.5 },
 		transition: 'background-color 150ms, border-color 150ms, color 150ms',
 		...noMotion,
 	}}>
@@ -624,13 +552,217 @@ const CameraOffLayer = styled('div')({
 	...noMotion,
 });
 
+// Round white buttons on the preview, like the mic and camera Fabs; light
+// blue while the effect is on.
+const effectButtonSx = (on: boolean) => ({
+	width: { xs: 44, sm: 48 },
+	height: { xs: 44, sm: 48 },
+	bgcolor: on ? joinBrand.blueLight : alpha(joinBrand.white, 0.92),
+	color: on ? joinBrand.blueDark : joinBrand.navy,
+	boxShadow: { xs: 'none', sm: `0 4px 12px ${alpha(joinBrand.navy, 0.3)}` },
+	'&:hover': { bgcolor: on ? joinBrand.blueSoft : joinBrand.white },
+	'&.Mui-disabled': { bgcolor: alpha(joinBrand.white, 0.6), color: joinBrand.textDisabled },
+	'& .MuiSvgIcon-root': { fontSize: 22 },
+});
+
+// The same actions as BlurButton and VideoBackgroundButton in the camera
+// chooser, drawn on the preview as in design A.
+const BlurPreviewButton = (): React.JSX.Element => {
+	const dispatch = useAppDispatch();
+	const videoDevices = useDeviceSelector('videoinput');
+	const videoInProgress = useAppSelector((state) => state.me.videoInProgress);
+	const blurOn = useAppSelector((state) => state.me.videoBackgroundEffect?.type === BackgroundType.BLUR);
+	const disabled = videoDevices.length === 0 || videoInProgress;
+
+	return (
+		<Tooltip title={disabled ? '' : backgroundBlurLabel()} placement='top' disableInteractive>
+			<span>
+				<IconButton
+					aria-label={backgroundBlurLabel()}
+					aria-pressed={blurOn}
+					disabled={disabled}
+					onClick={() => {
+						dispatch(meActions.setVideoBackgroundEffect({ type: blurOn ? BackgroundType.NONE : BackgroundType.BLUR }));
+						dispatch(updateVideoSettings());
+					}}
+					sx={effectButtonSx(blurOn)}
+				>
+					{ blurOn ? <BlurOff /> : <BlurOn /> }
+				</IconButton>
+			</span>
+		</Tooltip>
+	);
+};
+
+const BackgroundPreviewButton = (): React.JSX.Element => {
+	const dispatch = useAppDispatch();
+	const videoDevices = useDeviceSelector('videoinput');
+	const videoInProgress = useAppSelector((state) => state.me.videoInProgress);
+	const imageOn = useAppSelector((state) => state.me.videoBackgroundEffect?.type === BackgroundType.IMAGE);
+	const disabled = videoDevices.length === 0 || videoInProgress;
+
+	return (
+		<Tooltip title={disabled ? '' : selectVideoBackgroundLabel()} placement='top' disableInteractive>
+			<span>
+				<IconButton
+					aria-label={selectVideoBackgroundLabel()}
+					aria-pressed={imageOn}
+					disabled={disabled}
+					onClick={() => {
+						if (imageOn) {
+							dispatch(meActions.setVideoBackgroundEffectDisabled());
+							dispatch(updateVideoSettings());
+						} else {
+							dispatch(uiActions.setUi({ videoBackgroundDialogOpen: true }));
+						}
+					}}
+					sx={effectButtonSx(imageOn)}
+				>
+					{ imageOn ? <HideImageOutlined /> : <ImageOutlined /> }
+				</IconButton>
+			</span>
+		</Tooltip>
+	);
+};
+
+// Design A's full-width header: logo on the left; My meetings, language and
+// Sign in on the right. Same pieces as PrecallTitle, laid out as drawn.
+const headerButtonSx = {
+	height: 40,
+	minWidth: { xs: 44, sm: 0 },
+	px: { xs: 1, sm: 1.5 },
+	borderRadius: '10px',
+	textTransform: 'none',
+	letterSpacing: 0,
+	fontSize: 14,
+	fontWeight: 500,
+	color: joinBrand.navy,
+	'&:hover': { bgcolor: joinBrand.surfaceSubtle },
+	'& .MuiButton-startIcon': { m: { xs: 0, sm: '0 8px 0 0' } },
+	'& .MuiButton-startIcon .MuiSvgIcon-root': { fontSize: 18 },
+	'& .label': { display: { xs: 'none', sm: 'inline' } },
+} as const;
+
+const JoinHeader = (): React.JSX.Element => {
+	const dispatch = useAppDispatch();
+	const logo = useAppSelector((state) => state.room.logo) || edumeetConfig.theme.logo;
+	const loginEnabled = useAppSelector((state) => state.permissions.loginEnabled);
+	const loggedIn = useAppSelector((state) => state.permissions.loggedIn);
+	const locale = useAppSelector((state) => state.settings.locale) ?? 'en';
+	const localeInProgress = useAppSelector((state) => state.room.localeInProgress);
+	const [ languageAnchor, setLanguageAnchor ] = useState<HTMLElement | null>(null);
+
+	useEffect(() => {
+		dispatch(checkJWT());
+	}, []);
+
+	const languageName = localeList.find((l) => l.locale.includes(locale))?.name ?? localeList[0].name;
+
+	return (
+		<Box component='header' sx={{
+			height: { xs: 56, sm: 64 },
+			flexShrink: 0,
+			display: 'flex',
+			alignItems: 'center',
+			gap: 0.5,
+			pl: { xs: 2, sm: 4 },
+			pr: { xs: 0.75, sm: 4 },
+			bgcolor: joinBrand.white,
+			borderBottom: `1px solid ${joinBrand.line}`,
+			[shortScreen]: { height: 56 },
+			'& .MuiIconButton-root': { width: 40, height: 40, borderRadius: '10px', color: joinBrand.navy },
+			'& .MuiIconButton-root:hover': { bgcolor: joinBrand.surfaceSubtle },
+		}}>
+			{ logo ?
+				<Box component='img' src={logo} alt={edumeetConfig.title} sx={{ display: 'block', height: { xs: 22, sm: 26 }, width: 'auto', maxWidth: 200 }} /> :
+				<Typography sx={{ fontSize: 18, fontWeight: 700, color: joinBrand.navy }}>{ edumeetConfig.title }</Typography>
+			}
+			<Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+				<MeetingsButton type='iconbutton' toolTipLocation='bottom' />
+				<Button
+					onClick={(event) => setLanguageAnchor(event.currentTarget)}
+					aria-label={selectLanguageLabel()}
+					aria-haspopup='menu'
+					aria-expanded={Boolean(languageAnchor)}
+					disabled={localeInProgress}
+					startIcon={<LanguageOutlined />}
+					sx={headerButtonSx}
+				>
+					<span className='label'>{ languageName }</span>
+				</Button>
+				<Menu anchorEl={languageAnchor} open={Boolean(languageAnchor)} onClose={() => setLanguageAnchor(null)}>
+					{ localeList.map(({ name, locale: listLocale }) => (
+						<MenuItem
+							key={listLocale[0]}
+							selected={listLocale.includes(locale)}
+							onClick={() => {
+								setLanguageAnchor(null);
+								dispatch(setLocale(listLocale[0]));
+							}}
+						>
+							{ name }
+						</MenuItem>
+					)) }
+				</Menu>
+				{ loginEnabled && (
+					<Button
+						onClick={() => dispatch(loggedIn ? logout() : login())}
+						aria-label={loggedIn ? logoutLabel() : loginLabel()}
+						startIcon={loggedIn ? <LogoutOutlined /> : <LoginOutlined />}
+						sx={headerButtonSx}
+					>
+						<span className='label'>{ loggedIn ? logoutLabel() : loginLabel() }</span>
+					</Button>
+				) }
+			</Box>
+		</Box>
+	);
+};
+
+// How others will see you, as on a room tile. A styled span, not a Box, so
+// the `> .MuiBox-root` preview rules never match it.
+const PreviewNameTag = styled('span')(({ theme }) => ({
+	position: 'absolute',
+	top: 14,
+	left: 14,
+	zIndex: 2,
+	maxWidth: 'calc(100% - 28px)',
+	boxSizing: 'border-box',
+	padding: '5px 10px',
+	borderRadius: 8,
+	backgroundColor: alpha('#0f1b2e', 0.7),
+	color: joinBrand.white,
+	fontSize: 13,
+	fontWeight: 500,
+	lineHeight: '18px',
+	overflow: 'hidden',
+	textOverflow: 'ellipsis',
+	whiteSpace: 'nowrap',
+	pointerEvents: 'none',
+	[theme.breakpoints.down('sm')]: { top: 10, left: 10 },
+}));
+
+// A styled div, not a Box, for the same reason as PreviewNameTag.
+const PreviewControls = styled('div')(({ theme }) => ({
+	position: 'absolute',
+	left: 0,
+	right: 0,
+	bottom: 16,
+	zIndex: 2,
+	display: 'flex',
+	justifyContent: 'center',
+	gap: 12,
+	[theme.breakpoints.down('sm')]: { bottom: 12, gap: 10 },
+}));
+
 interface JoinPreviewProps {
 	startAudio: boolean;
 	startVideo: boolean;
 	locked?: boolean;
+	name?: string;
 }
 
-const JoinPreview = ({ startAudio, startVideo, locked }: JoinPreviewProps): React.JSX.Element => {
+const JoinPreview = ({ startAudio, startVideo, locked, name }: JoinPreviewProps): React.JSX.Element => {
 	const camOn = useAppSelector((state) => Boolean(state.me.previewWebcamTrackId));
 
 	return (
@@ -644,24 +776,21 @@ const JoinPreview = ({ startAudio, startVideo, locked }: JoinPreviewProps): Reac
 				backgroundColor: 'transparent',
 				backgroundImage: 'none',
 				boxShadow: {
-					xs: `0 0 0 2px ${alpha(joinBrand.blue, 0.35)}, 0 10px 24px ${alpha(joinBrand.navy, 0.25)}`,
-					sm: `0 0 0 2px ${alpha(joinBrand.blue, 0.35)}, 0 14px 34px ${alpha(joinBrand.navy, camOn ? 0.28 : 0.18)}`,
+					xs: `0 10px 24px ${alpha(joinBrand.navy, 0.22)}`,
+					sm: `0 14px 34px ${alpha(joinBrand.navy, 0.22)}`,
 				},
 			},
 			'& video': { borderRadius: '16px' },
 			[narrowPhone]: {
 				'& > .MuiBox-root, & video, & > div:first-of-type': { borderRadius: '14px' },
-				'& > .MuiBox-root': { boxShadow: `0 0 0 2px ${alpha(joinBrand.blue, 0.35)}` },
+				'& > .MuiBox-root': { boxShadow: `0 8px 20px ${alpha(joinBrand.navy, 0.2)}` },
 			},
 			[tabletTall]: { gridArea: 'preview' },
-			// Mic and camera buttons
 			'& .MuiFab-root': {
-				width: 44,
-				height: 44,
+				width: { xs: 44, sm: 48 },
+				height: { xs: 44, sm: 48 },
 				boxShadow: { xs: 'none', sm: `0 4px 12px ${alpha(joinBrand.navy, 0.3)}` },
 			},
-			// While joining the preview controls are dimmed and inactive, as drawn.
-			...(locked && { '& .MuiFab-root': { opacity: 0.6, pointerEvents: 'none' } }),
 			'& .MuiFab-default': {
 				backgroundColor: alpha(joinBrand.white, 0.92),
 				color: joinBrand.navy,
@@ -690,54 +819,65 @@ const JoinPreview = ({ startAudio, startVideo, locked }: JoinPreviewProps): Reac
 					</Typography>
 				</CameraOffLayer>
 			)}
-			<MediaPreview startAudio={startAudio} startVideo={startVideo} stopAudio={false} stopVideo={false} updateSelection />
+			<MediaPreview startAudio={startAudio} startVideo={startVideo} stopAudio={false} stopVideo={false} updateSelection withControls={false} />
+			{/* Design A: mic, camera, blur and background in one row along the
+				bottom of the preview. MediaPreview's own column is switched off. */}
+			<PreviewControls style={locked ? { opacity: 0.6, pointerEvents: 'none' } : undefined}>
+				<MicPreviewButton onColor='default' offColor='error' disabledColor='default' />
+				<WebcamPreviewButton onColor='default' offColor='error' disabledColor='default' />
+				<BlurPreviewButton />
+				<BackgroundPreviewButton />
+			</PreviewControls>
+			{/* Decoration only: the name field says the same to screen readers. */}
+			{ name && <PreviewNameTag aria-hidden>{ name }</PreviewNameTag> }
 		</Box>
 	);
 };
 
-// The choosers render their own ChooserDiv rows, and hide themselves when
-// there is only one device. This panel only frames and spaces them.
-const DevicesSection = ({ children }: { children: React.ReactNode }): React.JSX.Element => (
+// One device row: an icon inside the left of the select (design A). The
+// choosers hide themselves when there is only one device, and so does the
+// row, so a lone icon is never left behind.
+const DeviceRow = ({ icon: Icon, children }: { icon: SvgIconComponent; children: React.ReactNode }): React.JSX.Element => (
 	<Box sx={{
-		bgcolor: joinBrand.surfaceSubtle,
-		borderRadius: '16px',
-		p: { xs: '14px', sm: 1.5, md: 2 },
+		position: 'relative',
+		display: 'none',
+		'&:has(.MuiInputBase-root, .MuiButtonBase-root)': { display: 'block' },
+		// A lone speaker-test button (one output device) keeps no icon beside it.
+		'&:not(:has(.MuiInputBase-root)) > .row-icon': { display: 'none' },
+	}}>
+		<Icon className='row-icon' aria-hidden sx={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 1, fontSize: 18, color: joinBrand.textSecondary, pointerEvents: 'none' }} />
+		{ children }
+	</Box>
+);
+
+// The choosers render their own ChooserDiv rows. Their floating labels stay
+// for screen readers but are hidden on screen; the legend goes with them.
+const DevicesSection = ({ children }: { children: React.ReactNode }): React.JSX.Element => (
+	<Box component='fieldset' sx={{
+		m: 0,
+		minWidth: 0,
+		p: '14px',
+		border: `1px solid ${joinBrand.line}`,
+		borderRadius: '14px',
 		display: 'flex',
 		flexDirection: 'column',
-		gap: { xs: 2, sm: 1.5, md: 2 },
-		[narrowPhone]: { p: '14px 12px' },
-		[tabletTall]: { p: 2, gap: 2 },
-		[shortScreen]: { p: 1, gap: 1 },
-		// minWidth 0 lets a long device name ellipsize instead of widening the card.
-		'& > div': { m: 0, minWidth: 0 },
-		'& .MuiFormControl-root': { minWidth: 0 },
-		'& .MuiOutlinedInput-root': { backgroundColor: joinBrand.white },
-		// 48px device fields with 15px values and 11px labels (MUI: 56px, 16px, 12px).
-		'& .MuiSelect-select': { fontSize: 15, lineHeight: '23px', minHeight: 0, py: '12.5px' },
-		'& .MuiSelect-select.Mui-disabled': { color: joinBrand.textDisabled, WebkitTextFillColor: joinBrand.textDisabled },
-		'& .MuiInputLabel-root:not(.MuiInputLabel-shrink)': { transform: 'translate(14px, 12px) scale(1)' },
-		'& .MuiInputLabel-shrink': { transform: 'translate(14px, -7px) scale(0.6875)' },
-		'& .MuiOutlinedInput-notchedOutline legend': { fontSize: '0.6875em' },
-		'& .MuiInputBase-adornedStart:has(.MuiButton-root)': { pl: '6px' },
-		// Blur and virtual background are MUI text Buttons (64px wide, theme
-		// blue); drawn as 36px round grey icons, light blue when blur is on.
-		'& .MuiInputBase-root .MuiButton-root': {
-			minWidth: 0,
-			width: { xs: 44, sm: 36 },
-			height: { xs: 44, sm: 36 },
-			p: 0,
-			borderRadius: 999,
-			color: joinBrand.textSecondary,
-			'& .MuiSvgIcon-root': { fontSize: 18 },
-		},
-		'& .MuiInputBase-root .MuiButton-root:has([data-testid=BlurOffIcon])': {
-			bgcolor: joinBrand.blueLight,
-			color: joinBrand.blueDark,
-		},
+		gap: 1.25,
+		[shortScreen]: { p: '10px 12px 12px', gap: 1 },
+		'& legend': { px: 0.75, fontSize: 13, fontWeight: 600, color: joinBrand.labelText },
+		'& .MuiFormControl-root': { m: 0, minWidth: 0 },
+		'& .MuiFormControl-root > .MuiInputLabel-root': { ...visuallyHiddenSx, transform: 'none' },
+		'& .MuiOutlinedInput-notchedOutline': { top: 0, borderColor: joinBrand.border },
+		'& .MuiOutlinedInput-notchedOutline legend': { display: 'none' },
+		'& .MuiOutlinedInput-root': { height: 44, borderRadius: '10px', bgcolor: joinBrand.white, pl: 0 },
+		'& .MuiSelect-select': { fontSize: 14, lineHeight: '20px', minHeight: 0, py: '12px', pl: '40px' },
+		'& .MuiSelect-select.Mui-disabled': { color: joinBrand.textSecondary, WebkitTextFillColor: joinBrand.textSecondary },
+		// The speaker test button (the output chooser's adornment) moves to the
+		// right end, before the arrow, so the row icon owns the left.
+		'& .MuiInputBase-root > :not(.MuiSelect-select):not(input):not(svg):not(fieldset)': { order: 2, mr: '28px' },
+		'& .MuiInputBase-root .MuiButton-root': { minWidth: 0, width: 32, height: 32, p: 0, borderRadius: '8px', color: joinBrand.textSecondary, '& .MuiSvgIcon-root': { fontSize: 18 } },
+		'& div:has(> .MuiFormControl-root)': { m: 0 },
 	}}>
-		<Typography sx={{ fontSize: 12, fontWeight: 700, lineHeight: 'normal', letterSpacing: 1, textTransform: 'uppercase', color: joinBrand.textSecondary, [shortScreen]: { display: 'none' } }}>
-			{ joinDevicesLabel() }
-		</Typography>
+		<legend>{ joinDevicesLabel() }</legend>
 		{ children }
 	</Box>
 );
@@ -833,9 +973,6 @@ const Join = ({ roomId }: JoinProps): React.JSX.Element | null => {
 	}, []);
 
 	const joinDisabled = !displayName || joinInProgress || mediaLoading;
-	// The one-column Tablet layout does not fit the token field and its
-	// message, so with it shown tall tablets keep two columns.
-	const tabletStack = (styles: object) => (meetingTokenRejection ? {} : { [tabletTall]: styles });
 	const micOn = useAppSelector((state) => Boolean(state.me.previewMicTrackId));
 	const camOn = useAppSelector((state) => Boolean(state.me.previewWebcamTrackId));
 
@@ -846,197 +983,152 @@ const Join = ({ roomId }: JoinProps): React.JSX.Element | null => {
 
 	if (headless) return null;
 
+	const fieldLabelSx = { display: 'block', mb: 0.75, fontSize: 13, fontWeight: 500, lineHeight: '18px', color: joinBrand.labelText } as const;
+	const hintSx = { mt: 0.75, fontSize: 12, lineHeight: '16px', color: joinBrand.textSecondary } as const;
+
 	return (
 		<ThemeProvider theme={hasBackgroundImage ? joinThemeOverImage : joinTheme}>
-			<GenericDialog
-				// An enabled footer with no text would draw an empty strip.
-				showFooter={Boolean(edumeetConfig.infoTooltipText || edumeetConfig.infoTooltipDesc)}
-				precallTitleBackground={true}
-				title={
-					<Box sx={{
-						// The default logo is dark and disappears on navy, so it sits on a white chip.
-						// PrecallTitle sets the logo to 32px inline; the design uses 26px
-						// (22px on phones, 20px at 320, 24px on tall tablets).
-						'& img': {
-							boxSizing: 'content-box',
-							padding: { xs: '5px 8px', sm: '6px 10px' },
-							backgroundColor: joinBrand.white,
-							borderRadius: '8px',
-							height: { xs: '22px !important', sm: '26px !important' },
-							[narrowPhone]: { height: '20px !important' },
-							[tabletTall]: { height: '24px !important' },
-						},
-						// 44px header buttons (MUI small icon buttons are 34px), a 20px login
-						// icon and 15px medium label.
-						'& .MuiIconButton-root': { width: 44, height: 44 },
-						'& .MuiIconButton-root .MuiSvgIcon-root': { fontSize: 20 },
-						'& span': { fontSize: 15, fontWeight: 500, ml: 0 },
-						// The blue ring is too faint on navy, so header controls get a white one.
-						'& .MuiIconButton-root.Mui-focusVisible': focusRing(joinBrand.white, 2, 2),
-						'& .MuiIconButton-root:hover .MuiSvgIcon-root, & span:hover': { color: joinBrand.orange },
-					}}>
-						<PrecallTitle />
-					</Box>
-				}
-				maxWidth='md'
-				actions={
-					<Box
-						data-strip={hasImprint ? 'full' : 'enter-only'}
-						sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12.5, lineHeight: 'normal', color: joinBrand.textSecondary }}
-					>
-						<span>
-							{hasImprint && (
-								<Link href={imprintUrl} target="_blank" underline="none" sx={{ color: joinBrand.textSecondary, '&:hover': { color: joinBrand.navy } }}>
-									{imprintLabel()}
-								</Link>
-							)}
-						</span>
-						<Box component='span' sx={{ display: { xs: 'none', md: joinInProgress ? 'none' : 'inline' } }}>{ joinPressEnterLabel() }</Box>
-					</Box>
-				}
-				content={
-					// Tablet and desktop: preview on the left, heading and form on the
-					// right (equal columns on tablet, 7/5 on desktop). Stacking on a
-					// tablet made the card about 1000px tall, so only phones stack.
-					<Box sx={{
+			{/* Design A (canvas "Room Preview Redesign"): a full-width white header
+				and one white card on a light-grey page. A plain page, not a dialog:
+				nothing sits behind it. */}
+			<Box sx={{
+				position: 'fixed',
+				inset: 0,
+				zIndex: 1,
+				overflowY: 'auto',
+				display: 'flex',
+				flexDirection: 'column',
+				// A room, user or config background image stays faintly visible.
+				bgcolor: hasBackgroundImage ? alpha(joinBrand.pageBg, 0.88) : joinBrand.pageBg,
+				color: joinBrand.navy,
+			}}>
+				<JoinHeader />
+
+				<Box component='main' sx={{
+					flexGrow: 1,
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					justifyContent: { sm: 'center' },
+					gap: 2,
+					p: { xs: 0, sm: 3 },
+					[shortScreen]: { p: 1.5, gap: 1 },
+				}}>
+					<Box component='section' aria-labelledby='join-title' sx={{
+						width: { xs: '100%', sm: 'min(1140px, 100%)' },
+						boxSizing: 'border-box',
+						p: { xs: '20px 16px 0', sm: 3, md: '36px' },
+						bgcolor: joinBrand.white,
+						border: { xs: 0, sm: `1px solid ${joinBrand.line}` },
+						borderRadius: { xs: 0, sm: '20px' },
+						boxShadow: { xs: 'none', sm: `0 1px 2px ${alpha(joinBrand.navy, 0.05)}, 0 16px 40px ${alpha(joinBrand.navy, 0.08)}` },
 						display: 'grid',
-						// Desktop: a 564px preview and a 416px form, 36px apart, 32px from
-						// the card edges (DialogContent pads 16px, this adds the rest).
-						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) minmax(0, 1fr)', md: 'minmax(0, 564fr) minmax(0, 416fr)' },
+						gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) minmax(0, 1fr)', md: 'minmax(0, 620fr) minmax(0, 420fr)' },
 						gridTemplateAreas: {
-							xs: '"heading" "preview" "form"',
-							sm: '"preview heading" "preview form"',
+							xs: '"heading" "room" "preview" "form"',
+							sm: '"preview room" "preview heading" "preview form"',
 						},
-						gridTemplateRows: { sm: 'auto 1fr' },
-						columnGap: { sm: 3, md: '36px' },
+						gridTemplateRows: { sm: 'auto auto 1fr' },
+						columnGap: { sm: 3, md: 5 },
 						rowGap: { xs: 2, md: 2.25 },
-						pt: { xs: '11px', sm: 1.5, md: '27px' },
-						// Room for the Join button's shadow, which the scroll box would clip.
-						pb: { sm: 2, md: '20px' },
-						px: { sm: 0.5, md: 2 },
-						[narrowPhone]: { mx: '-4px', pt: '9px', rowGap: '14px' },
-						...tabletStack({
-							gridTemplateColumns: 'minmax(0, 1fr) auto',
-							gridTemplateAreas: '"heading heading" "preview preview" "status room" "form form" "join join"',
-							gridTemplateRows: 'none',
-							columnGap: 1.5,
-							rowGap: 2.25,
-							pt: '19px',
-							pb: 1.5,
-							px: 1,
-						}),
-						[shortScreen]: { pt: 0.5, pb: meetingTokenRejection ? 1 : 1.5 },
+						alignItems: 'start',
+						[narrowPhone]: { px: 1.5 },
+						[shortScreen]: { p: 3, rowGap: 1.5 },
+						'@keyframes joinCardRise': {
+							from: { opacity: 0, transform: 'translateY(12px)' },
+							to: { opacity: 1, transform: 'none' },
+						},
+						animation: 'joinCardRise 240ms ease-out',
+						...noMotion,
 					}}>
+						<RoomChip roomId={roomId} hideCopy={joinInProgress} />
+
 						<Box sx={{ gridArea: 'heading' }}>
 							<JoinHeading compact={Boolean(meetingTokenRejection)} />
 						</Box>
 
-						<Box sx={{ gridArea: 'preview', alignSelf: { sm: 'center' }, display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 1.75 }, [narrowPhone]: { gap: '14px' }, ...tabletStack({ display: 'contents' }) }}>
-							<JoinPreview startAudio={!audioMuted} startVideo={!videoMuted} locked={joinInProgress} />
-							<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5, ...tabletStack({ gridArea: 'status' }) }}>
+						<Box sx={{ gridArea: 'preview', display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+							<JoinPreview startAudio={!audioMuted} startVideo={!videoMuted} locked={joinInProgress} name={displayName} />
+							<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
 								<DeviceStatusChips />
-								{/* Desktop only, as drawn. The preview is mirrored; this tells new
-									users nobody else sees it yet. */}
-								<Typography sx={{ display: { xs: 'none', md: joinInProgress ? 'none' : 'flex' }, alignItems: 'center', gap: 0.75, fontSize: 13, color: joinBrand.textSecondary }}>
-									{ micOn || camOn ? <><Lock sx={{ fontSize: 16 }} />{ joinPreviewPrivateLabel() }</> : joinTurnOnLaterLabel() }
+								<Typography sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.75, fontSize: 13, color: joinBrand.textSecondary }}>
+									{ micOn || camOn ? <><Lock sx={{ fontSize: 15 }} />{ joinPreviewPrivateLabel() }</> : joinTurnOnLaterLabel() }
 								</Typography>
 							</Box>
 						</Box>
 
-						<Box sx={{
-							gridArea: 'form',
-							display: 'flex',
-							flexDirection: 'column',
-							gap: { xs: 2, sm: 1.75, md: meetingTokenRejection ? 2 : 2.25 },
-							minWidth: 0,
-							[narrowPhone]: { gap: '14px' },
-							...tabletStack({ display: 'contents' }),
-							// Short screens: 48px name field and 44px device fields; with the
-							// token field as well, 44px and 40px.
-							[shortScreen]: {
-								gap: meetingTokenRejection ? 1 : 1.25,
-								'& .MuiOutlinedInput-input:not(.MuiSelect-select)': { py: meetingTokenRejection ? '10.5px' : '12.5px' },
-								'& .MuiSelect-select': { py: meetingTokenRejection ? '8.5px' : '10.5px' },
-							},
-						}}>
-							<RoomChip roomId={roomId} hideCopy={joinInProgress} />
-
+						<Box sx={{ gridArea: 'form', display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.25 }, minWidth: 0, [shortScreen]: { gap: 1.5 } }}>
 							{/* Locked while joining: faded, and inert so nothing in it can be focused or changed. */}
 							<Box
 								inert={joinInProgress}
 								sx={{
 									display: 'flex',
 									flexDirection: 'column',
-									gap: { xs: 2, sm: 1.75, md: meetingTokenRejection ? 2 : 2.25 },
-									[narrowPhone]: { gap: '14px' },
-									...tabletStack({ gridArea: 'form', gap: 2.25 }),
-									[shortScreen]: { gap: meetingTokenRejection ? 1 : 1.25 },
+									gap: { xs: 2, md: 2.25 },
+									[shortScreen]: { gap: 1.5 },
 									opacity: joinInProgress ? 0.6 : 1,
 									transition: 'opacity 150ms',
 									...noMotion,
 								}}
 							>
 								<Box>
-									<ChooserDiv sx={{ m: 0 }}>
-										<TextInputField
-											label={yourNameLabel()}
-											value={displayName}
-											setValue={handleDisplayNameChange}
-											onEnter={handleJoin}
-											maxLength={MAX_DISPLAY_NAME_LENGTH}
-											startAdornment={<PersonOutlined />}
-											autoFocus
-										/>
-									</ChooserDiv>
-									{/* Empty: why Join is disabled. Filled: the hint from the design,
-										dropped on short screens to save height. */}
-									<Typography sx={{
-										mt: 0.75,
-										pl: 1.75,
-										fontSize: 12,
-										lineHeight: 'normal',
-										color: joinBrand.textSecondary,
-										[narrowPhone]: { pl: 1.5 },
-										...(displayName && { [shortScreen]: { display: 'none' } }),
-										// Filled: hidden on phones, while joining and above the token field, as drawn.
-										...(displayName && { display: { xs: 'none', sm: 'block' } }),
-										...(displayName && (meetingTokenRejection || joinInProgress) && { display: 'none' }),
-									}}>
+									<Typography component='label' htmlFor='join-name' sx={fieldLabelSx}>{ yourNameLabel() }</Typography>
+									<TextField
+										id='join-name'
+										fullWidth
+										autoFocus
+										value={displayName}
+										placeholder='e.g. Nadia Rahman'
+										onChange={(event) => handleDisplayNameChange(event.target.value)}
+										onFocus={(event) => event.target.select()}
+										onKeyDown={(event) => {
+											if (event.key === 'Enter' && !joinDisabled) handleJoin();
+										}}
+										slotProps={{
+											input: { startAdornment: <InputAdornment position='start'><PersonOutlined /></InputAdornment> },
+											htmlInput: { maxLength: MAX_DISPLAY_NAME_LENGTH, 'aria-describedby': 'join-name-hint' },
+										}}
+										sx={inputSx}
+									/>
+									<Typography id='join-name-hint' sx={{ ...hintSx, ...(displayName && { [shortScreen]: { display: 'none' } }) }}>
 										{ displayName ? joinNameHelperLabel() : joinEnterNameLabel() }
 									</Typography>
 								</Box>
 
 								{ meetingTokenRejection && (
 									// Drawn as an error: the token was missing or rejected.
-									<Box sx={{
-										'& .MuiOutlinedInput-notchedOutline, & .Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: joinBrand.error, borderWidth: 2 },
-										'& .MuiOutlinedInput-root.Mui-focused': { boxShadow: `0 0 0 4px ${alpha(joinBrand.error, 0.1)}` },
-										'& .MuiInputLabel-root, & .MuiInputLabel-root.Mui-focused, & .MuiInputAdornment-root': { color: joinBrand.error },
-									}}>
-										<ChooserDiv sx={{ m: 0 }}>
-											<TextInputField
-												label={meetingTokenLabel()}
-												value={meetingToken ?? ''}
-												setValue={(value) => dispatch(meActions.setMeetingToken(normalizeMeetingToken(value)))}
-												onEnter={handleJoin}
-												startAdornment={<KeyOutlined />}
-												autoFocus
-											/>
-										</ChooserDiv>
-										<Typography sx={{ mt: 0.75, pl: 1.75, fontSize: 12, lineHeight: 'normal', color: joinBrand.error }}>
+									<Box>
+										<Typography component='label' htmlFor='join-token' sx={{ ...fieldLabelSx, color: joinBrand.error }}>{ meetingTokenLabel() }</Typography>
+										<TextField
+											id='join-token'
+											fullWidth
+											autoFocus
+											error
+											value={meetingToken ?? ''}
+											onChange={(event) => dispatch(meActions.setMeetingToken(normalizeMeetingToken(event.target.value)))}
+											onKeyDown={(event) => {
+												if (event.key === 'Enter' && !joinDisabled) handleJoin();
+											}}
+											slotProps={{
+												input: { startAdornment: <InputAdornment position='start'><KeyOutlined /></InputAdornment> },
+												htmlInput: { 'aria-describedby': 'join-token-error' },
+											}}
+											sx={inputSx}
+										/>
+										<Typography id='join-token-error' sx={{ ...hintSx, color: joinBrand.error }}>
 											{ meetingTokenRejection === 'invalid' ? meetingTokenInvalidLabel() : meetingTokenRequiredLabel() }
 										</Typography>
 									</Box>
 								) }
 
 								<DevicesSection>
-									<AudioInputChooser />
-									{ showAudioOutputChooser && <AudioOutputChooser /> }
-									<VideoInputChooser withBlur withVideoBackground />
+									<DeviceRow icon={MicNoneOutlined}><AudioInputChooser /></DeviceRow>
+									{ showAudioOutputChooser && <DeviceRow icon={VolumeUpOutlined}><AudioOutputChooser /></DeviceRow> }
+									<DeviceRow icon={VideocamOutlined}><VideoInputChooser /></DeviceRow>
 								</DevicesSection>
 							</Box>
 
-							{/* Sticky at the bottom of the scrolling content on phones. */}
+							{/* Sticky at the bottom of the page on phones. */}
 							<Box sx={{
 								position: { xs: 'sticky', sm: 'static' },
 								bottom: 0,
@@ -1049,8 +1141,7 @@ const Join = ({ roomId }: JoinProps): React.JSX.Element | null => {
 								display: 'flex',
 								flexDirection: 'column',
 								gap: 1.25,
-								[narrowPhone]: { mx: '-12px', px: 1.5, pt: 3, pb: 1, gap: 1 },
-								...tabletStack({ gridArea: 'join' }),
+								[narrowPhone]: { mx: -1.5, px: 1.5 },
 							}}>
 								{/* A disabled button gets no pointer events, so the cursor and the
 									tooltip live on this wrapper. */}
@@ -1066,51 +1157,7 @@ const Join = ({ roomId }: JoinProps): React.JSX.Element | null => {
 											fullWidth
 											startIcon={joinInProgress ? <JoiningSpinner /> : undefined}
 											endIcon={joinInProgress ? undefined : <ArrowForward />}
-											sx={{
-												height: 52,
-												borderRadius: '12px',
-												fontSize: 17,
-												fontWeight: 700,
-												letterSpacing: '0.3px',
-												// MUI uppercases buttons; the design says "Join".
-												textTransform: 'none',
-												boxShadow: `0 8px 20px ${alpha(joinBrand.orange, 0.35)}`,
-												transition: 'background-color 150ms, box-shadow 150ms, transform 150ms',
-												// 10px between the label and the 20px icons.
-												'& .MuiButton-endIcon': { m: '0 0 0 10px', transition: 'transform 150ms' },
-												'& .MuiButton-startIcon': { m: '0 10px 0 0' },
-												'& .MuiButton-endIcon .MuiSvgIcon-root': { fontSize: 20 },
-												'&:hover': {
-													transform: 'translateY(-1px)',
-													boxShadow: `0 10px 24px ${alpha(joinBrand.orange, 0.45)}`,
-												},
-												// Less room under the button on short screens, so a tighter shadow.
-												[shortScreen]: { boxShadow: `0 6px 14px ${alpha(joinBrand.orange, 0.3)}`, ...(meetingTokenRejection && { height: 48 }) },
-												'&:hover .MuiButton-endIcon': { transform: 'translateX(4px)' },
-												'&:active': {
-													backgroundColor: joinBrand.orangePressed,
-													transform: 'none',
-													boxShadow: 'none',
-												},
-												'&.Mui-focusVisible': {
-													...focusRing(joinBrand.navy, 3, 2),
-													boxShadow: `0 0 0 8px ${joinBrand.orangeLight}`,
-												},
-												// Joining keeps the orange, so it reads as busy rather than unavailable.
-												'&.Mui-disabled': joinInProgress ? {
-													backgroundColor: joinBrand.orange,
-													color: joinBrand.navy,
-													boxShadow: 'none',
-												} : {
-													backgroundColor: joinBrand.orangeDisabled,
-													color: joinBrand.orangeDisabledText,
-													boxShadow: 'none',
-												},
-												'@media (prefers-reduced-motion: reduce)': {
-													transition: 'none',
-													'&:hover, &:hover .MuiButton-endIcon': { transform: 'none' },
-												},
-											}}
+											sx={joinButtonSx(Boolean(joinInProgress))}
 										>
 											{ joinInProgress ? joiningLabel() : joinLabel() }
 										</Button>
@@ -1119,39 +1166,37 @@ const Join = ({ roomId }: JoinProps): React.JSX.Element | null => {
 								<Box role='status' aria-live='polite' sx={visuallyHiddenSx}>
 									{ joinInProgress ? joiningLabel() : '' }
 								</Box>
-								{/* The imprint sits in the bottom strip; where there is no strip
-									(phones, short screens) it joins this line. */}
-								{(hasPrivacy || hasImprint) && (
-									<Typography sx={{
-										fontSize: { xs: 12, sm: 12.5 },
-										lineHeight: 'normal',
-										color: joinBrand.textSecondary,
-										textAlign: 'center',
-										...(!hasPrivacy && { display: { xs: 'block', sm: 'none' }, [shortScreen]: { display: 'block' } }),
-									}}>
-										{hasPrivacy && (
-											<>
-												{joinConsentLabel()}{' '}
-												<Link href={privacyUrl} target="_blank">
-													{privacyPolicyLabel()}
-												</Link>
-											</>
-										)}
-										{hasImprint && (
-											<Box component='span' sx={{ display: { xs: 'inline', sm: 'none' }, [shortScreen]: { display: 'inline' } }}>
-												{hasPrivacy && ' · '}
-												<Link href={imprintUrl} target="_blank" color="inherit" underline="hover">
-													{imprintLabel()}
-												</Link>
-											</Box>
-										)}
-									</Typography>
-								)}
+								<Typography sx={{ fontSize: 12.5, lineHeight: '18px', color: joinBrand.textSecondary, textAlign: 'center' }}>
+									{ hasPrivacy && (
+										<>
+											{ joinConsentLabel() }{' '}
+											<Link href={privacyUrl} target='_blank'>{ privacyPolicyLabel() }</Link>
+										</>
+									) }
+									{ hasImprint && (
+										<>
+											{ hasPrivacy && ' · ' }
+											<Link href={imprintUrl} target='_blank' color='inherit' underline='hover'>{ imprintLabel() }</Link>
+										</>
+									) }
+									<Box component='span' sx={{ display: { xs: 'none', md: joinInProgress ? 'none' : 'inline' } }}>
+										{ (hasPrivacy || hasImprint) && ' · ' }{ joinPressEnterLabel() }
+									</Box>
+								</Typography>
 							</Box>
 						</Box>
 					</Box>
-				}
-			/>
+
+					{ edumeetConfig.infoTooltipEnabled && edumeetConfig.infoTooltipText && (
+						<Typography sx={{ maxWidth: 'min(1140px, 100%)', px: 2, pb: 2, fontSize: 12.5, textAlign: 'center', color: joinBrand.textSecondary }}>
+							{ edumeetConfig.infoTooltipLink ?
+								<Link href={edumeetConfig.infoTooltipLink} target='_blank' underline='none' sx={{ fontWeight: 500 }}>{ edumeetConfig.infoTooltipText }</Link> :
+								edumeetConfig.infoTooltipText }
+							{ edumeetConfig.infoTooltipDesc && <> · { edumeetConfig.infoTooltipDesc }</> }
+						</Typography>
+					) }
+				</Box>
+			</Box>
 		</ThemeProvider>
 	);
 };

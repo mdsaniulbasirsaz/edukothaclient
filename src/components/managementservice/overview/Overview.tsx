@@ -9,7 +9,7 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { useAppDispatch } from '../../../store/hooks';
 import { countData, latestData } from '../../../store/actions/managementActions';
 import { ellipsis, focusRing, sectionLabelSx, squareInput, str, ui } from '../users/userUi';
-import { CountUp, liftOn, liftTransition, staggerSx, useIntro } from '../motion';
+import { CountUp, TiltCard, staggerSx, tiltLayer, useIntro } from '../motion';
 
 // Overview (user brief 2026-10-18, canvas "Overview v2", built with the
 // console's square corners and its blue / orange / navy): a welcome header,
@@ -249,20 +249,21 @@ const Overview = ({ name, roleLabel, items, onOpen, onNewRoom }: Props) => {
 
 							return (
 								<Box component='li' key={item.key} sx={{ display: 'flex', minWidth: 0, ...staggerSx(i + kpis.length, intro) }}>
-									<Box component='article' sx={{ ...cardSx, ...(warn ? { bgcolor: attention.bg, borderColor: attention.border } : {}), flexGrow: 1, minWidth: 0, p: '20px 20px 4px', display: 'flex', flexDirection: 'column', gap: 1.25, transition: `box-shadow 150ms ease, border-color 150ms ease, ${liftTransition}`, '&:hover': { borderColor: warn ? attention.border : ui.orange, ...liftOn() } }}>
+									{/* 3D hover card (user brief 2026-10-26); orange when it needs attention. */}
+									<TiltCard accent={warn ? 'orange' : 'blue'} restBorder={warn ? attention.border : undefined} sx={{ ...(warn ? { bgcolor: attention.bg } : {}), flexGrow: 1, minWidth: 0, p: '20px 20px 4px', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
 										<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-											{iconSquare(item.icon, false, 44)}
+											<Box className={tiltLayer.icon}>{iconSquare(item.icon, false, 44)}</Box>
 											{warn && <Box component='span' sx={{ fontSize: 12, lineHeight: '16px', fontWeight: 700, color: attention.text, bgcolor: attention.tint, border: `1px solid ${attention.border}`, px: 1.25, py: '4px' }}>{copy.actionNeeded}</Box>}
 										</Box>
-										<Typography component='h3' sx={{ m: 0, fontSize: 17, lineHeight: '24px', fontWeight: 700, color: ui.navy }}>{item.label}</Typography>
-										<Typography sx={{ flexGrow: 1, fontSize: 14, lineHeight: '20px', color: ui.muted }}>{item.description}</Typography>
+										<Typography component='h3' className={tiltLayer.title} sx={{ m: 0, fontSize: 17, lineHeight: '24px', fontWeight: 700, color: ui.navy }}>{item.label}</Typography>
+										<Typography className={tiltLayer.desc} sx={{ flexGrow: 1, fontSize: 14, lineHeight: '20px', color: ui.muted }}>{item.description}</Typography>
 										<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, borderTop: `1px solid ${warn ? attention.border : ui.lineSoft}`, pt: 0.5 }}>
 											<Box component='span' sx={{ fontSize: 14, color: warn ? attention.text : ui.muted, fontVariantNumeric: 'tabular-nums' }}>{words[item.key] ? (n === undefined ? '' : countOf(item.key, n)) : ''}</Box>
 											<ButtonBase onClick={action} sx={linkSx}>
 												{actionText}<ArrowForwardOutlinedIcon aria-hidden sx={{ fontSize: 18 }} />
 											</ButtonBase>
 										</Box>
-									</Box>
+									</TiltCard>
 								</Box>
 							);
 						})}

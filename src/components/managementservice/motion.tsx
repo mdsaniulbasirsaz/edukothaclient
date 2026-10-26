@@ -1,5 +1,6 @@
-import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { MouseEvent, ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 
 // Motion for the admin console (user brief 2026-10-18, "subtle": 150–250ms,
@@ -232,4 +233,159 @@ export const CountUp = ({ value, duration = 800 }: { value: number; duration?: n
 		<span aria-hidden>{shown.toLocaleString('en-US')}</span>
 		<Box component='span' sx={{ position: 'absolute', width: 1, height: 1, p: 0, m: -1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 }}>{value.toLocaleString('en-US')}</Box>
 	</>;
+};
+
+// ----- 3D hover card (user brief 2026-10-26) -----
+// A white, square card that tilts toward the cursor (at most 6°), lifts 6px
+// and floats on a deeper shadow; a blue border with a soft ring, a 4px top
+// bar and a pale light that follows the cursor fade in. Its layers float at
+// different depths: mark the icon tile with tiltLayer.icon (36px), the title
+// with tiltLayer.title (20px) and the description with tiltLayer.desc (10px);
+// everything else stays on the card face. The cursor position is written to
+// CSS variables once per frame, so moving the mouse never re-renders React.
+// Only a real mouse tilts (no sticky tilt after a tap); keyboard focus inside
+// the card lifts it without tilting; with reduced motion it only lifts a little.
+const TILT_MAX = 6;
+const tiltEase = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+const finePointer = '@media (hover: hover) and (pointer: fine)';
+const INTER_HREF = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+
+export const tiltLayer = { icon: 'tilt-icon', title: 'tilt-title', desc: 'tilt-desc' } as const;
+
+const tiltPalette = {
+	blue: { accent: '#1a81ec', ring: 'rgba(26, 129, 236, 0.12)', shadow: 'rgba(26, 129, 236, 0.30)' },
+	orange: { accent: '#fe9b2a', ring: 'rgba(254, 155, 42, 0.16)', shadow: 'rgba(254, 155, 42, 0.30)' },
+} as const;
+
+// Inter is not part of the console's own fonts; the cards load it once.
+const useInterFont = () => {
+	useEffect(() => {
+		if (document.querySelector(`link[href="${INTER_HREF}"]`)) return;
+		const link = document.createElement('link');
+
+		link.rel = 'stylesheet';
+		link.href = INTER_HREF;
+		document.head.appendChild(link);
+	}, []);
+};
+
+type TiltCardProps = {
+	children: ReactNode;
+	// Orange instead of blue, for cards that need attention.
+	accent?: 'blue' | 'orange';
+	// Resting border colour (default #DFE6EF).
+	restBorder?: string;
+	component?: React.ElementType;
+	sx?: SxProps<Theme>;
+};
+
+export const TiltCard = ({ children, accent = 'blue', restBorder = '#dfe6ef', component = 'article', sx }: TiltCardProps) => {
+	const ref = useRef<HTMLElement>(null);
+	const frame = useRef(0);
+	const c = tiltPalette[accent];
+
+	useInterFont();
+	useEffect(() => () => cancelAnimationFrame(frame.current), []);
+
+	const write = (rx: number, ry: number, mx: number, my: number) => {
+		const el = ref.current;
+
+		if (!el) return;
+		el.style.setProperty('--tilt-rx', `${rx.toFixed(2)}deg`);
+		el.style.setProperty('--tilt-ry', `${ry.toFixed(2)}deg`);
+		el.style.setProperty('--tilt-mx', `${mx.toFixed(1)}%`);
+		el.style.setProperty('--tilt-my', `${my.toFixed(1)}%`);
+	};
+
+	const onMouseMove = (e: MouseEvent<HTMLElement>) => {
+		if (prefersLessMotion()) return;
+		const r = e.currentTarget.getBoundingClientRect();
+		const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+		const py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+
+		cancelAnimationFrame(frame.current);
+		// The edge nearest the cursor dips away: top → positive rotateX,
+		// right → positive rotateY.
+		frame.current = requestAnimationFrame(() => write((0.5 - py) * 2 * TILT_MAX, (px - 0.5) * 2 * TILT_MAX, px * 100, py * 100));
+	};
+
+	const onMouseLeave = () => {
+		cancelAnimationFrame(frame.current);
+		write(0, 0, 50, 0);
+	};
+
+	const lifted = {
+		borderColor: c.accent,
+		boxShadow: `0 0 0 4px ${c.ring}, 0 2px 4px rgba(4, 44, 106, 0.06), 0 24px 48px -12px ${c.shadow}`,
+		'& > .tilt-bar': { opacity: 1 },
+	};
+	const depth = (z: number, shadow?: string) => ({ transform: `translateZ(${z}px)`, ...(shadow ? { boxShadow: shadow } : {}) });
+
+	return (
+		<Box
+			ref={ref}
+			component={component}
+			onMouseMove={onMouseMove}
+			onMouseLeave={onMouseLeave}
+			sx={[
+				{
+					'--tilt-rx': '0deg',
+					'--tilt-ry': '0deg',
+					'--tilt-mx': '50%',
+					'--tilt-my': '0%',
+					position: 'relative',
+					bgcolor: '#fff',
+					border: `1px solid ${restBorder}`,
+					borderRadius: 0,
+					boxShadow: '0 1px 2px rgba(4, 44, 106, 0.05)',
+					fontFamily: '"Inter", "Roboto", sans-serif',
+					'& .MuiTypography-root, & button': { fontFamily: 'inherit' },
+					transformStyle: 'preserve-3d',
+					transform: 'perspective(1000px) translateY(0) scale(1) rotateX(0deg) rotateY(0deg)',
+					transition: `transform 450ms ${tiltEase}, box-shadow 450ms ${tiltEase}, border-color 300ms ease`,
+					willChange: 'transform',
+					// Top bar and cursor light: drawn on the card face.
+					'& > .tilt-bar': { position: 'absolute', top: -1, left: -1, right: -1, height: 4, bgcolor: c.accent, opacity: 0, transition: 'opacity 300ms ease', pointerEvents: 'none' },
+					'& > .tilt-sheen': {
+						position: 'absolute',
+						inset: 0,
+						pointerEvents: 'none',
+						opacity: 0,
+						transition: 'opacity 300ms ease',
+						background: 'radial-gradient(380px circle at var(--tilt-mx) var(--tilt-my), rgba(232, 242, 253, 0.95) 0%, rgba(240, 246, 255, 0.45) 38%, rgba(255, 255, 255, 0) 70%)',
+					},
+					// Content is positioned too, so it paints above the light (DOM order).
+					'& > :not(.tilt-sheen):not(.tilt-bar)': { position: 'relative' },
+					[`& .${tiltLayer.icon}, & .${tiltLayer.title}, & .${tiltLayer.desc}`]: {
+						position: 'relative',
+						transform: 'translateZ(0)',
+						transition: `transform 450ms ${tiltEase}, box-shadow 450ms ${tiltEase}`,
+					},
+					'&:focus-within': { ...lifted, transform: 'perspective(1000px) translateY(-6px) scale(1.02)' },
+					[finePointer]: {
+						'&:hover': {
+							...lifted,
+							transform: 'perspective(1000px) translateY(-6px) scale(1.02) rotateX(var(--tilt-rx)) rotateY(var(--tilt-ry))',
+							'& > .tilt-sheen': { opacity: 1 },
+							[`& .${tiltLayer.icon}`]: depth(34, '0 10px 18px -6px rgba(4, 44, 106, 0.28)'),
+							[`& .${tiltLayer.title}`]: depth(20),
+							[`& .${tiltLayer.desc}`]: depth(10),
+						},
+					},
+					// Reduced motion: no tilt, no depth, only a gentle lift.
+					[reduceMotion]: {
+						transition: 'box-shadow 300ms ease, border-color 300ms ease, transform 300ms ease',
+						'&:hover, &:focus-within': { transform: 'translateY(-3px)' },
+						[`&:hover .${tiltLayer.icon}, &:hover .${tiltLayer.title}, &:hover .${tiltLayer.desc}`]: { transform: 'none', boxShadow: 'none' },
+						'&:hover > .tilt-sheen': { opacity: 0 },
+					},
+				},
+				...(Array.isArray(sx) ? sx : [ sx ]),
+			]}
+		>
+			<span className='tilt-sheen' aria-hidden />
+			<span className='tilt-bar' aria-hidden />
+			{ children }
+		</Box>
+	);
 };
